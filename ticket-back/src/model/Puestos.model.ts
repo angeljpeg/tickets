@@ -30,14 +30,14 @@ Puesto.init(
     prioridad: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 1, // Valor predeterminado de acuerdo con la estructura de la tabla
+      defaultValue: 1,
     },
   },
   {
     sequelize,
     modelName: "Puesto",
     tableName: "puestos",
-    timestamps: false, // No se usan campos `createdAt` y `updatedAt`
+    timestamps: false,
   }
 );
 

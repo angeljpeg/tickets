@@ -1,1 +1,4 @@
-console.log("asd")
+export interface ICreatePuesto {
+  nombrePuesto: string;
+  prioridad: number;
+}
