@@ -23,3 +23,5 @@ CREATE TABLE IF NOT EXISTS `puestos` (
   `prioridad` INT NOT NULL DEFAULT 1,
   PRIMARY KEY (`idPuesto`)
 );
+
+-- SELECT * FROM tickets
