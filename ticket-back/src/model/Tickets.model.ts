@@ -62,7 +62,7 @@ Ticket.init(
     sequelize,
     modelName: "Ticket",
     tableName: "tickets",
-    timestamps: false, // Desactiva createdAt y updatedAt
+    timestamps: false,
   }
 );
 
