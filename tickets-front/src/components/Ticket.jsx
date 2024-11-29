@@ -7,6 +7,9 @@ import { useContext /* ,useEffect, useState  */ } from "react";
 import UserContext from "../context/UserContext";
 import { EditarTicketModal } from "./Modales/components/EditarTicketModal";
 
+import dayjs from "dayjs";
+
+
 export function Ticket({ ticket }) {
   const {
     user,
@@ -14,10 +17,16 @@ export function Ticket({ ticket }) {
   } = useContext(UserContext);
 
   const priorityColors = {
-    ALTO: "text-red-500",
-    MEDIO: "text-yellow-500",
-    BAJO: "text-green-500",
+    1: "text-red-500",
+    2: "text-yellow-500",
+    3: "text-green-500",
   };
+
+  const priorityText = {
+    1: "Alto",
+    2: "Medio",
+    3: "Bajo",
+  }
 
   const stateIcons = {
     COMPLETADO: <FaRegCheckCircle className="text-xl" />,
@@ -31,6 +40,10 @@ export function Ticket({ ticket }) {
     id: ticket.id,
   };
 
+
+  const fechaSolicitud = dayjs(ticket.fechaSolicitudTicket);
+  
+
   return (
     <div
       className={`flex flex-col w-full p-4 bg-neutral-800 rounded-xl h-full`}
@@ -41,13 +54,13 @@ export function Ticket({ ticket }) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center w-full">
           <h2 className="text-xl font-semibold">
-            {ticket.titulo}{" "}
+            {ticket.tituloTicket}{" "}
             <span className="text-lg font-medium text-neutral-500">
-              #{ticket.id}
+              #{ticket.idTicket}
             </span>
           </h2>
         </div>
-        {user.role == "admin" && (
+        {user.rolUsuario == "Administrador" && (
           <div className="flex items-center gap-2">
             <TbEdit
               className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
@@ -68,35 +81,33 @@ export function Ticket({ ticket }) {
           <p>Prioridad</p>
           <p
             className={`text-2xl font-semibold ${
-              priorityColors[ticket.prioridad] || "text-neutral-300"
+              priorityColors[ticket.prioridadTicket] || "text-neutral-300"
             }`}
           >
-            {ticket.prioridad == null ? "SIN ASIGNAR" : ticket.prioridad}
+            {ticket.prioridadTicket == null ? "SIN ASIGNAR" : priorityText[ticket.prioridadTicket]}
           </p>
         </div>
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Estado</p>
           <div className="flex items-center gap-2">
-            {stateIcons[ticket.estado]}
-            <p> {ticket.estado}</p>
+            {stateIcons[ticket.statusTicket]}
+            <p> {ticket.statusTicket}</p>
           </div>
         </div>
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Fecha solicitud</p>
-          <p>{ticket.fechaSolicitud}</p>
+          <p>{fechaSolicitud.format("DD/MM/YYYY")}</p>
         </div>
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Fecha finalizado</p>
           <p>
-            {ticket.fechaFinalizado == null
-              ? "No finalizado"
-              : ticket.fechaFinalizado}
+            {ticket.fechaFinalizadoTicket == null ? "No finalizado" : dayjs(ticket.fechaFinalizadoTicket).format("DD/MM/YYYY")}
           </p>
         </div>
       </div>
       <div className="p-4 mb-4 rounded-lg bg-neutral-700">
         <p>Descripción</p>
-        <p>{ticket.descripcion}</p>
+        <p>{ticket.descripcionTicket}</p>
       </div>
     </div>
   );

@@ -19,6 +19,7 @@ class Ticket extends Model<
 > {
   declare idTicket: CreationOptional<number>;
   declare statusTicket: string;
+  declare tituloTicket: string;
   declare descripcionTicket: string;
   declare fechaSolicitadoTicket: Date;
   declare fechaFinalizadoTicket: Date | null;
@@ -37,13 +38,18 @@ Ticket.init(
       type: DataTypes.ENUM(...Object.values(StatusTickets)),
       allowNull: false,
     },
-    descripcionTicket: {
+    tituloTicket: {
       type: new DataTypes.STRING(255),
       allowNull: false,
+    },
+    descripcionTicket: {
+      type: new DataTypes.STRING(255),
+      allowNull: true,
     },
     fechaSolicitadoTicket: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: sequelize.fn("NOW"),
     },
     fechaFinalizadoTicket: {
       type: DataTypes.DATEONLY,
