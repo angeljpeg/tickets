@@ -90,3 +90,37 @@ export const DeleteUser = async (req: Request, res: Response): Promise<any> => {
       .json({ message: "Error al eliminar el usuario", error });
   }
 };
+
+// Login de un usuario
+export const LoginUser = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const { correoUsuario, claveUsuario } = req.body;
+    const usuario = await Usuario.findOne({
+      where: { correoUsuario },
+    });
+
+    console.log(usuario);
+
+    if (!usuario) {
+      return res.status(404).json({ 
+        campo: "correoUsuario",
+        mensaje: "Usuario no encontrado",
+        valor: correoUsuario
+      });
+    }
+
+    if (usuario.claveUsuario !== claveUsuario) {
+      return res.status(401).json({ 
+        campo: "claveUsuario",
+        mensaje: "Contraseña incorrecta",
+        valor: claveUsuario
+      });
+    }
+
+    return res.json({ usuario });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error al realizar el login", error });
+  }
+};
