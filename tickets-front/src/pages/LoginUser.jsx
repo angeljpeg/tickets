@@ -2,14 +2,24 @@ import { useNavigate } from "react-router-dom";
 import { HiWrenchScrewdriver } from "react-icons/hi2";
 import { useContext } from "react";
 import UserContext from "../context/UserContext";
+import { useForm } from "react-hook-form";
+import { InputText } from "../components/ui";
 
 export function LoginUI() {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+    getValues,
+  } = useForm();
+
   const navigate = useNavigate();
   const { login } = useContext(UserContext);
   const handleLogin = () => {
-    login();
+    console.log(getValues());
     navigate("/welcome");
   };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <div className="flex flex-col items-center p-8 rounded-lg bg-neutral-950">
@@ -24,23 +34,32 @@ export function LoginUI() {
         </div>
 
         <div className="mt-4">
-          <form className="flex flex-col">
-            <div className="mb-2">
-              <p className="mb-2 text-lg">Correo</p>
-              <input
-                className="px-4 py-2 transition-all duration-300 ease-in-out rounded-lg outline-none hover:bg-neutral-700 bg-neutral-800"
-                type="text"
-              />
-            </div>
+          <form className="flex flex-col" onSubmit={handleSubmit(handleLogin)}>
+            <InputText
+              name="correoUsuario"
+              label="Correo"
+              validation={{
+                required: "El correo es obligatorio",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Ingresa un correo válido",
+                },
+              }}
+              register={register}
+              errors={errors}
+            />
             <div className="mb-4">
-              <p className="mb-2 text-lg">Contraseña</p>
+              <p className="text-lg">Contraseña</p>
               <input
-                className="p-4 py-2 transition-all duration-300 ease-in-out rounded-lg outline-none hover:bg-neutral-700 bg-neutral-800"
+                className="p-4 my-2 py-2 transition-all duration-300 ease-in-out rounded-lg outline-none hover:bg-neutral-700 bg-neutral-800"
                 type="password"
               />
+              <span className="block text-sm text-red-500">
+                Oops! Algo Salio Mal
+              </span>
             </div>
             <button
-              onClick={handleLogin}
+              type="submit"
               className="relative self-center p-2 overflow-hidden rounded-lg bg-neutral-700 group"
             >
               <span className="relative z-10 font-medium transition-all duration-300 group-hover:text-black">
