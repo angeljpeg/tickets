@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS  `usuarios` (
   `idUsuario` INT(11) NOT NULL AUTO_INCREMENT,
   `puestoUsuario` INT(11) NOT NULL,
   `nombreUsuario` VARCHAR(100) NOT NULL,
+  `apellidoUsuario` VARCHAR(100) NOT NULL
   `correoUsuario` VARCHAR(50) NOT NULL UNIQUE,
   `claveUsuario` VARCHAR(255) NOT NULL, -- Ajustado para almacenar contraseñas hasheadas
   `rolUsuario` ENUM('Usuario', 'Tecnico', 'Administrador') NOT NULL,

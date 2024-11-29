@@ -19,6 +19,7 @@ class Usuario extends Model<
 > {
   declare idUsuario: CreationOptional<number>;
   declare nombreUsuario: string;
+  declare apellidoUsuario: string;
   declare correoUsuario: string;
   declare claveUsuario: string;
   declare rolUsuario: RolUsuarios;
@@ -35,6 +36,10 @@ Usuario.init(
     nombreUsuario: {
       type: new DataTypes.STRING(65),
       allowNull: true,
+    },
+    apellidoUsuario: {
+      type: DataTypes.STRING(65),
+      allowNull: true
     },
     correoUsuario: {
       type: new DataTypes.STRING(255),
