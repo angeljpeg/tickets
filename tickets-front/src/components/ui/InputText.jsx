@@ -1,12 +1,19 @@
 import PropTypes from "prop-types";
-export default function InputText({ name, label, defaultValue, validation, register, errors }) {
-
+export default function InputText({
+  name,
+  label,
+  defaultValue,
+  validation,
+  register,
+  errors,
+  typeInput,
+}) {
   return (
-    <div className="mb-4">
+    <div className="mb-4 w-full">
       {label && <label className="block text-lg mb-1">{label}</label>}
       <input
         className="w-full px-4 py-2 my-2 transition-all duration-300 ease-in-out rounded-lg outline-none hover:bg-neutral-700 bg-neutral-800"
-        type="text"
+        type={typeInput || "text"}
         {...register(name, validation)}
         defaultValue={defaultValue}
       />
@@ -25,5 +32,6 @@ InputText.propTypes = {
   defaultValue: PropTypes.string, // Valor inicial opcional
   validation: PropTypes.object, // Reglas de validación
   register: PropTypes.func.isRequired, // Reglas de validación
-  errors: PropTypes.object.isRequired // Reglas de validación
+  errors: PropTypes.object.isRequired, // Reglas de validación
+  typeInput: PropTypes.string, // Tipo de input
 };

@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 // Routes
 import {router as UsuarioRouter} from "./usuarios/routes"
@@ -11,6 +12,7 @@ const API_PREFIX = "/api/v1"
 const app = express();
 
 // config
+app.use(cors());
 app.use(express.json());
 
 

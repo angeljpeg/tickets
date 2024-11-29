@@ -18,14 +18,8 @@ export default function UserProvider({ children }) {
     id: -1
   });
 
-  const login = () => {
-    setUser({
-      id: 2,
-      name: "Pirita",
-      lastName: "Dream",
-      email: "pirita@gmail.com",
-      role: "admin",
-    });
+  const login = (loggedUser) => {
+    setUser(loggedUser);
     console.log("Creando el usuario");
   };
 

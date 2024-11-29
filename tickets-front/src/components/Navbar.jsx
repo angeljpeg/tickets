@@ -80,7 +80,7 @@ export function Navbar() {
                       <p className="text-lg font-bold text-neutral-300">
                         TI<span className="text-sm"> go! </span>
                         <span className="text-sm font-semibold text-neutral-500">
-                          {user.role == "admin" ? "Administrador" : (user.role == "tech" ? "Técnico" : (user.role == "secre" ? "Secretario" : "Usuario"))}
+                          {user.role == "Administrador" ? "Administrador" : (user.role == "Tecnico" ? "Técnico" : (user.role == "Secretario" ? "Secretario" : "Usuario"))}
                         </span>
                       </p>
                     </div>
@@ -190,13 +190,13 @@ export function Navbar() {
               {/* Contenedor principal */}
               <div className="flex gap-2 p-2 mr-2 transition-all duration-300 ease-in-out rounded-lg cursor-pointer group-hover:bg-neutral-800">
                 <div className="p-2 text-xl font-semibold rounded-lg bg-neutral-600">
-                  <p>{getInitials(user.name, user.lastName)}</p>
+                  <p>{getInitials(user.nombreUsuario, user.apellidoUsuario)}</p>
                 </div>
                 <div className={`flex items-center justify-between w-full`}>
                   <div className="flex flex-col">
-                    <p className="text-base text-neutral-400">{user.name} {user.lastName}</p>
+                    <p className="text-base text-neutral-400">{user.nombreUsuario} {user.apellidoUsuario}</p>
                     <p className="text-sm text-neutral-600">
-                      {user.email}
+                      {user.correoUsuario}
                     </p>
                   </div>
                   <MdUnfoldMore className="text-xl" />
@@ -212,12 +212,12 @@ export function Navbar() {
               >
                 <div className="flex gap-2 p-2 cursor-default">
                   <div className="p-2 text-xl font-semibold rounded-lg bg-neutral-600">
-                    <p>{getInitials(user.name, user.lastName)}</p>
+                    <p>{getInitials(user.nombreUsuario, user.apellidoUsuario)}</p>
                   </div>
                   <div className="flex flex-col">
-                    <p className="text-base text-neutral-400">{user.name} {user.lastName}</p>
+                    <p className="text-base text-neutral-400">{user.nombreUsuario} {user.apellidoUsuario}</p>
                     <p className="text-xs text-neutral-500">
-                      {user.email}
+                      {user.correoUsuario}
                     </p>
                   </div>
                 </div>
