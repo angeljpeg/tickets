@@ -9,7 +9,6 @@ import { EditarTicketModal } from "./Modales/components/EditarTicketModal";
 
 import dayjs from "dayjs";
 
-
 export function Ticket({ ticket }) {
   const {
     user,
@@ -26,7 +25,7 @@ export function Ticket({ ticket }) {
     1: "Alto",
     2: "Medio",
     3: "Bajo",
-  }
+  };
 
   const stateIcons = {
     COMPLETADO: <FaRegCheckCircle className="text-xl" />,
@@ -40,9 +39,7 @@ export function Ticket({ ticket }) {
     id: ticket.id,
   };
 
-
   const fechaSolicitud = dayjs(ticket.fechaSolicitudTicket);
-  
 
   return (
     <div
@@ -84,7 +81,9 @@ export function Ticket({ ticket }) {
               priorityColors[ticket.prioridadTicket] || "text-neutral-300"
             }`}
           >
-            {ticket.prioridadTicket == null ? "SIN ASIGNAR" : priorityText[ticket.prioridadTicket]}
+            {ticket.prioridadTicket == null
+              ? "SIN ASIGNAR"
+              : priorityText[ticket.prioridadTicket]}
           </p>
         </div>
         <div className="p-4 rounded-lg bg-neutral-700">
@@ -96,12 +95,14 @@ export function Ticket({ ticket }) {
         </div>
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Fecha solicitud</p>
-          <p>{fechaSolicitud.format("DD/MM/YYYY")}</p>
+          <p>{fechaSolicitud.format("DD/MM/YYYY HH:mm")}</p>
         </div>
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Fecha finalizado</p>
           <p>
-            {ticket.fechaFinalizadoTicket == null ? "No finalizado" : dayjs(ticket.fechaFinalizadoTicket).format("DD/MM/YYYY")}
+            {ticket.fechaFinalizadoTicket == null
+              ? "No finalizado"
+              : dayjs(ticket.fechaFinalizadoTicket).format("DD/MM/YYYY")}
           </p>
         </div>
       </div>

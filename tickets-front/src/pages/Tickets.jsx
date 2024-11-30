@@ -5,6 +5,7 @@ import UserContext from "../context/UserContext";
 import { Ticket } from "../components/Ticket";
 import { ticketsByUser, allTickets } from "../api/tickets.fetch";
 import AddTicket from "../components/forms/AddTicket";
+import FilterTicket from "../components/Modales/TicketsFilter";
 
 export function TicketsUI() {
   const { user } = useContext(UserContext);
@@ -32,16 +33,23 @@ export function TicketsUI() {
     setFilters((prev) => ({ ...prev, [filterName]: value }));
   };
 
-  // Aplicar filtros
-  const applyFilters = () => {
-    toggleModal("filter", false);
-  };
-
   // Cerrar modal de agregar ticket
   const handleCloseAddTicket = () => toggleModal("addTicket", false);
 
   // Cerrar modal de filtros
   const handleCloseFilter = () => toggleModal("filter", false);
+
+  // Reiniciar filtros
+  const handleRestartFilters = () => {
+    setFilters({
+      prioridad: [],
+      estado: [],
+      idTicket: { valor: "" },
+      fechaSolicitud: { operador: "", valor: "" },
+      hora: { operador: "", valor: "" },
+    });
+    toggleModal("filter", false);
+  };
 
   // Funciones para filtrar tickets
   const filterByOperator = (ticketValue, operator, filterValue) => {
@@ -62,16 +70,56 @@ export function TicketsUI() {
   };
 
   const filteredTickets = useMemo(() => {
-    let filtered = Array.isArray(tickets) ? [...tickets] : [];
-    // Filtrar por usuario o técnico según el rol
-    if (user.rolUsuario === "Usuario") {
-      filtered = filtered.filter((ticket) => ticket.idUsuario === user.id);
-    } else if (user.rolUsuario === "Tecnico") {
-      filtered = filtered.filter((ticket) => ticket.idUsuario === user.id);
+    let filtered = [...tickets];
+
+    // Filtrar por prioridad
+    if (filters.prioridad.length > 0) {
+      filtered = filtered.filter((ticket) =>
+        filters.prioridad.includes(ticket.prioridadTicket)
+      );
     }
-    // Otros filtros: prioridad, estado, etc.
+
+    // Filtrar por estado
+    if (filters.estado.length > 0) {
+      filtered = filtered.filter((ticket) =>
+        filters.estado.includes(ticket.statusTicket)
+      );
+    }
+
+    // Filtrar por ID del ticket
+    if (filters.idTicket.valor) {
+      filtered = filtered.filter(
+        (ticket) => ticket.idTicket === parseInt(filters.idTicket.valor, 10)
+      );
+    }
+
+    // Filtrar por fecha de solicitud
+    if (filters.fechaSolicitud.valor) {
+      filtered = filtered.filter((ticket) =>
+        filterByOperator(
+          new Date(ticket.fechaSolicitadoTicket).toISOString().split("T")[0],
+          filters.fechaSolicitud.operador,
+          filters.fechaSolicitud.valor
+        )
+      );
+    }
+
+    // Filtrar por hora de solicitud
+    if (filters.hora.valor) {
+      filtered = filtered.filter((ticket) =>
+        filterByOperator(
+          new Date(ticket.fechaSolicitadoTicket)
+            .toISOString()
+            .split("T")[1]
+            .slice(0, 5),
+          filters.hora.operador,
+          filters.hora.valor
+        )
+      );
+    }
+
     return filtered;
-  }, [tickets, user]);
+  }, [tickets, filters]);
 
   // Cargar tickets del usuario al montar el componente
   useEffect(() => {
@@ -98,8 +146,6 @@ export function TicketsUI() {
 
     fetchTickets();
   }, [user]);
-
-  console.log(`${user.rolUsuario}: `, tickets);
 
   return (
     <div className="w-full h-[calc(100vh-4rem)]">
@@ -156,7 +202,12 @@ export function TicketsUI() {
             modals.filter ? "scale-100" : "scale-95"
           }`}
         >
-          content
+          <FilterTicket
+            handleClose={handleCloseFilter}
+            handleFilterChange={handleFilterChange}
+            handleRestartFilters={handleRestartFilters}
+            filters={filters}
+          />
         </div>
       </div>
 
@@ -164,7 +215,10 @@ export function TicketsUI() {
       <div className="p-4 mt-14">
         <div className="grid grid-cols-1 gap-4">
           {filteredTickets.map((ticket) => (
-            <Ticket key={ticket.idTicket} ticket={ticket} />
+            <Ticket
+              key={ticket.idTicket}
+              ticket={ticket}
+            />
           ))}
         </div>
       </div>
