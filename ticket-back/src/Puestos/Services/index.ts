@@ -19,7 +19,7 @@ export class PuestoService {
       return false;
     }
 
-    if (prioridad < 1 || prioridad > 5) {
+    if (prioridad < 1 || prioridad > 3) {
       return false;
     }
 

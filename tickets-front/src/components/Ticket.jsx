@@ -58,6 +58,8 @@ export function Ticket({ ticket }) {
 
   const fechaSolicitud = dayjs(ticket.fechaSolicitudTicket);
 
+  console.log(ticket);
+
   return (
     <>
       <div
@@ -65,7 +67,11 @@ export function Ticket({ ticket }) {
       >
         {/* Modal Edit ticket */}
         <EditarTicketModal ticket={ticket} />
-        <DeleteTicket handleClose={handleCloseDeleteTicket} ticket={ticket} isOpen={modals.deleteTicket} />
+        <DeleteTicket
+          handleClose={handleCloseDeleteTicket}
+          ticket={ticket}
+          isOpen={modals.deleteTicket}
+        />
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center w-full">
@@ -122,10 +128,20 @@ export function Ticket({ ticket }) {
                 : dayjs(ticket.fechaFinalizadoTicket).format("DD/MM/YYYY")}
             </p>
           </div>
-        </div>
-        <div className="p-4 mb-4 rounded-lg bg-neutral-700">
-          <p>Descripción</p>
-          <p>{ticket.descripcionTicket}</p>
+          <div className={`p-4 col-span-${user.rolUsuario == "Administrador" ? 2 : "full"} rounded-lg bg-neutral-700`}>
+            <p>Descripción</p>
+            <p>{ticket.descripcionTicket}</p>
+          </div>
+          {user.rolUsuario == "Administrador" && (
+            <div className="p-4 col-span-2 rounded-lg bg-neutral-700">
+              <p>Usuario</p>
+              <p>
+                {ticket.usuario.nombreUsuario} {ticket.usuario.apellidoUsuario}
+              </p>
+              <p>{ticket.usuario.emailUsuario}</p>
+              <p>Puesto #{ticket.usuario.puestoUsuario}: </p>
+            </div>
+          )}
         </div>
       </div>
     </>

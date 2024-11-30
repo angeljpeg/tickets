@@ -1,7 +1,13 @@
 import { Router } from "express";
 
 //Controllers
-import { CreateTicket, GetAllTickets, GetTicketById, getTicketsByUsuario } from "../Controllers";
+import {
+  CreateTicket,
+  GetAllTickets,
+  GetTicketById,
+  getTicketsByUsuario,
+  deleteTicketById,
+} from "../Controllers";
 
 const router = Router();
 
@@ -13,8 +19,8 @@ router.get("/tickets/:id", GetTicketById);
 
 router.get("/tickets/usuario/:id", getTicketsByUsuario);
 
-/* router.put("/puestos/:id", );
+/* router.put("/puestos/:id", );*/
 
-router.delete("/puestos/:id", ); */
+router.delete("/tickets/delete/:id", deleteTicketById);
 
 export { router };

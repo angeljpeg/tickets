@@ -1,4 +1,4 @@
-import { API_URL } from "./const.js";
+import { API_URL, queryDelete } from "./const.js";
 
 
 export const allTickets = async () => {
@@ -37,3 +37,14 @@ export const addTicket = async (data) => {
     console.log(error);
   }
 };
+
+export const deleteTicket = async (data) => {
+  try {
+    console.log(data);
+    const response = await queryDelete(`tickets/delete/${data}`);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+}

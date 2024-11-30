@@ -1,7 +1,16 @@
 import PropTypes from "prop-types";
 import { HiOutlineX } from "react-icons/hi";
+import { deleteTicket } from "../../api/tickets.fetch.js";
 
 export default function DeleteTicket({ handleClose, ticket, isOpen }) {
+
+  const handleDelete = async () => {
+    const response = await deleteTicket(ticket.idTicket);
+    if (response.status === 200) {
+      handleClose();
+      alert("Ticket eliminado con éxito", "success");
+    }
+  };
   return (
     <>
       {/* Modal Delete Ticket */}
@@ -46,7 +55,7 @@ export default function DeleteTicket({ handleClose, ticket, isOpen }) {
               Cancelar
             </button>
             <button
-              onClick={() => alert("Eliminar ticket")}
+              onClick={() => handleDelete()}
               className="p-2 transition-all duration-300 rounded bg-neutral-600 hover:bg-red-600 hover:text-black"
             >
               Eliminar

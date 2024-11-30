@@ -28,15 +28,7 @@ export const CreateTicket = async (
       return;
     }
 
-    let prioridadTicket = 1;
-
-    if (puestoUsuario.prioridad > 4) {
-      prioridadTicket = 3;
-    } else if (puestoUsuario.prioridad > 2) {
-      prioridadTicket = 2;
-    } else {
-      prioridadTicket = 1;
-    }
+    let prioridadTicket = puestoUsuario.prioridad;
 
     // Crear el ticket
     const ticket = await Ticket.create({
@@ -90,10 +82,11 @@ export const GetAllTickets = async (req: Request, res: Response) => {
           as: "usuario", // Alias configurado en la relación
           attributes: [
             "idUsuario",
+            "puestoUsuario",
             "nombreUsuario",
+            "apellidoUsuario",
             "correoUsuario",
             "rolUsuario",
-            "puestoUsuario",
           ], // Campos específicos del usuario
         },
       ],
@@ -157,6 +150,38 @@ export const GetTicketById = async (req: Request, res: Response) => {
 
     res.status(500).json({
       error: "Ocurrió un error al obtener los tickets.",
+      details: error.message,
+    });
+  }
+};
+
+export const deleteTicketById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const ticket = await Ticket.findByPk(id);
+    if (!ticket) {
+      res
+        .status(404)
+        .json({
+          error: "Ticket no encontrado.",
+          campo: "idTicket",
+          valor: id,
+          status: 404,
+        });
+      return;
+    }
+
+    await ticket.destroy();
+
+    res.status(200).json({
+      status: 200,
+      message: "Ticket eliminado exitosamente.",
+    });
+  } catch (error: any) {
+    console.error("Error al eliminar el ticket:", error.message);
+
+    res.status(500).json({
+      error: "Ocurrió un error al eliminar el ticket.",
       details: error.message,
     });
   }

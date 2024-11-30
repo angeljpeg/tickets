@@ -50,7 +50,8 @@ CREATE TABLE `citas` (
   `idTicket` int(11) NOT NULL,
   `fechaInicioCita` datetime NOT NULL,
   `fechaFinCita` datetime NOT NULL,
-  PRIMARY KEY (`idCita`)
+  PRIMARY KEY (`idCita`),
+FOREIGN KEY (`idTicket`) REFERENCES `tickets`(`idTicket`) ON DELETE CASCADE ON UPDATE CASCADE
 ); 
 
 -- SELECT * FROM tecnicos_citas

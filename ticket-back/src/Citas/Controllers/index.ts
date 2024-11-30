@@ -21,6 +21,11 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
       return res.status(400).json({ error: "Datos de entrada inválidos" });
     }
 
+    const ticket = await Ticket.findByPk(idTicket);
+    if (!ticket) {
+      return res.status(404).json({ error: "Ticket no encontrado" });
+    }
+
     // Validar formato de fechas
     const fechaInicio = new Date(fechaInicioCita);
     const fechaFin = new Date(fechaFinCita);
