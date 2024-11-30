@@ -168,13 +168,13 @@ export const GetAllCitas = async (
   res: Response
 ): Promise<any> => {
   try {
-    const citas = await Cita.findAll({
+    const citas = await Cita.findAndCountAll({
       include: [
         { model: Ticket, as: "ticket" },
         { model: Usuario, as: "tecnicos" },
       ],
     });
-    res.status(200).json(citas);
+    res.status(200).json({message: "Citas obtenidas exitosamente.", data: citas});
   } catch (error) {
     res.status(500).json({ error });
   }

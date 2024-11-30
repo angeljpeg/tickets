@@ -58,8 +58,6 @@ export function Ticket({ ticket }) {
 
   const fechaSolicitud = dayjs(ticket.fechaSolicitudTicket);
 
-  console.log(ticket);
-
   return (
     <>
       <div
