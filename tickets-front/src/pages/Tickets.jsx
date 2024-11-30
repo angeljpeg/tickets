@@ -21,6 +21,7 @@ export function TicketsUI() {
   const [modals, setModals] = useState({
     filter: false,
     addTicket: false,
+    deleteTicket: false,
   });
 
   // Función para alternar visibilidad de modales
@@ -215,10 +216,7 @@ export function TicketsUI() {
       <div className="p-4 mt-14">
         <div className="grid grid-cols-1 gap-4">
           {filteredTickets.map((ticket) => (
-            <Ticket
-              key={ticket.idTicket}
-              ticket={ticket}
-            />
+            <Ticket key={ticket.idTicket} ticket={ticket} toggleModal={toggleModal} />
           ))}
         </div>
       </div>

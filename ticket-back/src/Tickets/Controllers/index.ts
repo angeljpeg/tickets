@@ -93,12 +93,14 @@ export const GetAllTickets = async (req: Request, res: Response) => {
             "nombreUsuario",
             "correoUsuario",
             "rolUsuario",
+            "puestoUsuario",
           ], // Campos específicos del usuario
         },
       ],
       attributes: [
         "idTicket",
         "statusTicket",
+        "tituloTicket",
         "descripcionTicket",
         "fechaSolicitadoTicket",
         "fechaFinalizadoTicket",
