@@ -1,38 +1,159 @@
 import { Request, Response } from "express";
 import { Cita, Ticket, Usuario, TecnicoCita } from "../../model";
+import { Op, Transaction } from "sequelize";
+import { sequelize } from "../../config";
 
 // Crear una nueva cita
 export const CreateCita = async (req: Request, res: Response): Promise<any> => {
+  const transaction: Transaction = await sequelize.transaction();
+
   try {
     const { idTicket, fechaInicioCita, fechaFinCita, tecnicos } = req.body;
 
-    // Validación
-    if (!Array.isArray(tecnicos)) {
-      return res
-        .status(400)
-        .json({ error: "El campo 'tecnicos' debe ser un arreglo" });
+    // Validación inicial
+    if (
+      !idTicket ||
+      !fechaInicioCita ||
+      !fechaFinCita ||
+      !Array.isArray(tecnicos) ||
+      tecnicos.length === 0
+    ) {
+      return res.status(400).json({ error: "Datos de entrada inválidos" });
     }
 
-    // Crear cita
+    // Validar formato de fechas
+    const fechaInicio = new Date(fechaInicioCita);
+    const fechaFin = new Date(fechaFinCita);
+    if (fechaInicio >= fechaFin) {
+      return res.status(400).json({ error: "El rango de fechas no es válido" });
+    }
+
+    // Verificar si hay citas existentes que se solapan con el nuevo rango de fechas
+    const citasConflicto = await Cita.findAll({
+      where: {
+        [Op.or]: [
+          {
+            fechaInicioCita: {
+              [Op.between]: [fechaInicio, fechaFin], // La nueva cita empieza dentro de una cita existente
+            },
+          },
+          {
+            fechaFinCita: {
+              [Op.between]: [fechaInicio, fechaFin], // La nueva cita termina dentro de una cita existente
+            },
+          },
+          {
+            [Op.and]: [
+              {
+                fechaInicioCita: {
+                  [Op.lte]: fechaInicio, // La nueva cita abarca una existente
+                },
+              },
+              {
+                fechaFinCita: {
+                  [Op.gte]: fechaFin, // La nueva cita abarca una existente
+                },
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    if (citasConflicto.length > 0) {
+      await transaction.rollback();
+      return res.status(400).json({
+        error: "Ya existe una cita en este rango de fechas",
+        citasConflicto,
+      });
+    }
+
+    // Verificar conflictos de horarios para cada técnico
+    for (const tecnicoId of tecnicos) {
+      const citasConflicto = await Cita.findAll({
+        include: [
+          {
+            model: Usuario,
+            as: "tecnicos", // Usa el alias de la relación definida
+            through: { attributes: [] }, // Esto elimina los atributos de la tabla intermedia, `TecnicoCita`
+            where: { idUsuario: tecnicoId },
+          },
+        ],
+        where: {
+          [Op.or]: [
+            {
+              fechaInicioCita: {
+                [Op.between]: [fechaInicio, fechaFin],
+              },
+            },
+            {
+              fechaFinCita: {
+                [Op.between]: [fechaInicio, fechaFin],
+              },
+            },
+            {
+              [Op.and]: [
+                {
+                  fechaInicioCita: {
+                    [Op.lte]: fechaInicio,
+                  },
+                },
+                {
+                  fechaFinCita: {
+                    [Op.gte]: fechaFin,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      if (citasConflicto.length > 0) {
+        await transaction.rollback();
+        return res.status(400).json({
+          error: `El técnico con ID ${tecnicoId} tiene conflictos de horarios`,
+          citasConflicto,
+        });
+      }
+    }
+
+    // Crear la cita
     const cita = await Cita.create(
       { idTicket, fechaInicioCita, fechaFinCita },
-      { include: [{ model: Ticket, as: "ticket" }] }
+      { transaction }
     );
 
-    // Crear técnicos asociados
-    const tecnicosCita = await Promise.all(
-      tecnicos.map((tecnico: Usuario) =>
-        TecnicoCita.create({
-          idUsuario: tecnico,
+    // Asociar técnicos
+    const tecnicosCita = [];
+    for (const tecnicoId of tecnicos) {
+      const tec = await Usuario.findByPk(tecnicoId);
+      if (!tec || tec.rolUsuario.toUpperCase() !== "TECNICO") {
+        await transaction.rollback();
+        return res.status(400).json({
+          error: "Usuario no es técnico",
+          campo: "tecnicos",
+          valor: tecnicoId,
+        });
+      }
+
+      const tecnicoCita = await TecnicoCita.create(
+        {
+          idUsuario: tecnicoId,
           idCita: cita.idCita,
-        })
-      )
-    );
+        },
+        { transaction }
+      );
+      tecnicosCita.push(tecnicoCita);
+    }
 
+    // Confirmar la transacción
+    await transaction.commit();
     res.status(201).json({ cita, tecnicosCita });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error });
+    if (transaction) await transaction.rollback();
+    console.error("Error:", error);
+    res.status(500).json({ error });
   }
 };
 
@@ -97,14 +218,14 @@ export const UpdateCitaById = async (
 
     // Crear técnicos asociados
     const tecnicosCita = await Promise.all(
-        tecnicos.map((tecnico: Usuario) =>
-          TecnicoCita.create({
-            idUsuario: tecnico,
-            idCita: cita.idCita,
-          })
-        )
-      );
-    res.status(200).json({cita, tecnicosCita});
+      tecnicos.map((tecnico: Usuario) =>
+        TecnicoCita.create({
+          idUsuario: tecnico,
+          idCita: cita.idCita,
+        })
+      )
+    );
+    res.status(200).json({ cita, tecnicosCita });
   } catch (error) {
     res.status(500).json({ error: error });
   }

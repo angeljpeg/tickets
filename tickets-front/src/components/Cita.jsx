@@ -11,7 +11,7 @@ export function Cita({cita}){
     <div
       className={`flex flex-col w-full p-4 bg-neutral-800 rounded-xl h-full`}
     >
-      <h2 className="mb-4 text-xl font-semibold">Cita <span className="text-lg font-medium text-neutral-500">#{cita.id}</span></h2>
+      <h2 className="mb-4 text-xl font-semibold">Cita <span className="text-lg font-medium text-neutral-500">#{cita.idCita}</span></h2>
       <div className="grid grid-cols-1 gap-2 mb-4 lg:grid-cols-4 md:grid-cols-2">
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Prioridad</p>

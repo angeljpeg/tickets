@@ -17,7 +17,6 @@ Ticket.belongsTo(Usuario, {
   as: "usuario",
 });
 
-// TICKETS - CITAS
 // Relación con Ticket
 Cita.belongsTo(Ticket, { foreignKey: "idTicket", as: "ticket" });
 Ticket.hasOne(Cita, { foreignKey: "idTicket", as: "cita" });

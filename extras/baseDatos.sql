@@ -44,9 +44,9 @@ CREATE TABLE `tickets` (
 );
 
 -- SELECT * FROM citas
--- DROP TABLE
+-- DROP TABLE citas
 CREATE TABLE `citas` (
-  `idCita` int(11) NOT NULL,
+  `idCita` int(11) NOT NULL AUTO_INCREMENT,
   `idTicket` int(11) NOT NULL,
   `fechaInicioCita` datetime NOT NULL,
   `fechaFinCita` datetime NOT NULL,
