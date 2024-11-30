@@ -88,6 +88,12 @@ export const GetAllTickets = async (req: Request, res: Response) => {
             "correoUsuario",
             "rolUsuario",
           ], // Campos específicos del usuario
+          include: [
+            {
+              model: Puesto,
+              attributes: ["prioridad", "nombrePuesto"],
+            },
+          ],
         },
       ],
       attributes: [

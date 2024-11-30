@@ -139,7 +139,7 @@ export function Ticket({ ticket }) {
                 {ticket.usuario.nombreUsuario} {ticket.usuario.apellidoUsuario}
               </p>
               <p>{ticket.usuario.emailUsuario}</p>
-              <p>Puesto #{ticket.usuario.puestoUsuario}: </p>
+              <p>Puesto #{ticket.usuario.puestoUsuario}: {ticket.usuario.Puesto.nombrePuesto}</p>
             </div>
           )}
         </div>
