@@ -65,7 +65,25 @@ export const CreateTicket = async (
 
 export const GetAllTickets = async (req: Request, res: Response) => {
   try {
-    const tickets = await Ticket.findAll({
+    const tickets = await Ticket.findAndCountAll({
+      order: [
+        // Ordenar por status personalizado: Pendiente > En proceso > Completado
+        [
+          sequelize.literal(`
+            CASE 
+              WHEN statusTicket = 'Pendiente' THEN 1
+              WHEN statusTicket = 'En proceso' THEN 2
+              WHEN statusTicket = 'Completado' THEN 3
+              ELSE 4
+            END
+          `),
+          "ASC",
+        ],
+        // Ordenar por prioridadTicket: más bajo primero
+        ["prioridadTicket", "ASC"],
+        // Ordenar por fechaSolicitadoTicket: más reciente primero
+        ["fechaSolicitadoTicket", "DESC"],
+      ],
       include: [
         {
           model: Usuario,

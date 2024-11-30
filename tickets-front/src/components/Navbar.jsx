@@ -80,7 +80,13 @@ export function Navbar() {
                       <p className="text-lg font-bold text-neutral-300">
                         TI<span className="text-sm"> go! </span>
                         <span className="text-sm font-semibold text-neutral-500">
-                          {user.role == "Administrador" ? "Administrador" : (user.role == "Tecnico" ? "Técnico" : (user.role == "Secretario" ? "Secretario" : "Usuario"))}
+                          {user.rolUsuario == "Administrador"
+                            ? "Administrador"
+                            : user.role == "Tecnico"
+                            ? "Técnico"
+                            : user.role == "Secretario"
+                            ? "Secretario"
+                            : "Usuario"}
                         </span>
                       </p>
                     </div>
@@ -194,7 +200,9 @@ export function Navbar() {
                 </div>
                 <div className={`flex items-center justify-between w-full`}>
                   <div className="flex flex-col">
-                    <p className="text-base text-neutral-400">{user.nombreUsuario} {user.apellidoUsuario}</p>
+                    <p className="text-base text-neutral-400">
+                      {user.nombreUsuario} {user.apellidoUsuario}
+                    </p>
                     <p className="text-sm text-neutral-600">
                       {user.correoUsuario}
                     </p>
@@ -212,10 +220,14 @@ export function Navbar() {
               >
                 <div className="flex gap-2 p-2 cursor-default">
                   <div className="p-2 text-xl font-semibold rounded-lg bg-neutral-600">
-                    <p>{getInitials(user.nombreUsuario, user.apellidoUsuario)}</p>
+                    <p>
+                      {getInitials(user.nombreUsuario, user.apellidoUsuario)}
+                    </p>
                   </div>
                   <div className="flex flex-col">
-                    <p className="text-base text-neutral-400">{user.nombreUsuario} {user.apellidoUsuario}</p>
+                    <p className="text-base text-neutral-400">
+                      {user.nombreUsuario} {user.apellidoUsuario}
+                    </p>
                     <p className="text-xs text-neutral-500">
                       {user.correoUsuario}
                     </p>

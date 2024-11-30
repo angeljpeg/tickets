@@ -3,7 +3,7 @@ import { IoIosAdd } from "react-icons/io";
 import { CiFilter } from "react-icons/ci";
 import UserContext from "../context/UserContext";
 import { Ticket } from "../components/Ticket";
-import { ticketsByUser } from "../api/tickets.fetch";
+import { ticketsByUser, allTickets } from "../api/tickets.fetch";
 import AddTicket from "../components/forms/AddTicket";
 
 export function TicketsUI() {
@@ -62,33 +62,44 @@ export function TicketsUI() {
   };
 
   const filteredTickets = useMemo(() => {
-    let filtered = [...tickets];
+    let filtered = Array.isArray(tickets) ? [...tickets] : [];
     // Filtrar por usuario o técnico según el rol
-    if (user.role === "user") {
-      filtered = filtered.filter((ticket) => ticket.fk_idUsuario === user.id);
-    } else if (user.role === "tech") {
-      filtered = filtered.filter((ticket) => ticket.fk_idTecnico === user.id);
+    if (user.rolUsuario === "Usuario") {
+      filtered = filtered.filter((ticket) => ticket.idUsuario === user.id);
+    } else if (user.rolUsuario === "Tecnico") {
+      filtered = filtered.filter((ticket) => ticket.idUsuario === user.id);
     }
     // Otros filtros: prioridad, estado, etc.
     return filtered;
-  }, [tickets, filters, user]);
+  }, [tickets, user]);
 
   // Cargar tickets del usuario al montar el componente
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await ticketsByUser(user?.idUsuario);
-        setTickets(response.data.rows);
-        setTotalTickets(response.data.count);
+        let response;
+        if (user?.rolUsuario === "Usuario") {
+          response = await ticketsByUser(user?.idUsuario);
+        } else if (user?.rolUsuario === "Administrador") {
+          response = await allTickets();
+        }
+
+        if (response && Array.isArray(response.data.rows)) {
+          setTickets(response.data.rows);
+          setTotalTickets(response.data.count);
+        } else {
+          setTickets([]); // Establecer un array vacío si no hay datos válidos
+        }
       } catch (error) {
         console.error("Error fetching tickets:", error);
+        setTickets([]); // En caso de error, evitar que tickets sea undefined
       }
     };
 
-    if (user?.idUsuario) {
-      fetchTickets();
-    }
-  }, [user?.idUsuario]);
+    fetchTickets();
+  }, [user]);
+
+  console.log(`${user.rolUsuario}: `, tickets);
 
   return (
     <div className="w-full h-[calc(100vh-4rem)]">
@@ -120,13 +131,34 @@ export function TicketsUI() {
       </div>
 
       {/* Modal Agregar Ticket */}
-      {modals.addTicket && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/75">
-          <div className="p-4 rounded-lg max-w-[400px] w-[400px] bg-neutral-800">
-            <AddTicket handleCloseAddTicket={handleCloseAddTicket} />
-          </div>
+      <div
+        className={`fixed inset-0 flex items-center justify-center bg-black/75 transition-opacity duration-300 ${
+          modals.addTicket ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div
+          className={`p-4 rounded-lg max-w-[400px] w-[400px] bg-neutral-800 transition-transform duration-300 ${
+            modals.addTicket ? "scale-100" : "scale-95"
+          }`}
+        >
+          <AddTicket handleCloseAddTicket={handleCloseAddTicket} />
         </div>
-      )}
+      </div>
+
+      {/* Modal Filtrat Ticket */}
+      <div
+        className={`fixed inset-0 flex items-center justify-center bg-black/75 transition-opacity duration-300 ${
+          modals.filter ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div
+          className={`p-4 rounded-lg max-w-[400px] w-[400px] bg-neutral-800 transition-transform duration-300 ${
+            modals.filter ? "scale-100" : "scale-95"
+          }`}
+        >
+          content
+        </div>
+      </div>
 
       {/* Listado de Tickets */}
       <div className="p-4 mt-14">

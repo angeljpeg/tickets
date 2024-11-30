@@ -1,5 +1,17 @@
 import { API_URL } from "./const.js";
 
+
+export const allTickets = async () => {
+  try {
+    const response = await fetch(`${API_URL}/tickets`, {
+      method: "GET",
+    });
+    return response.json();
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const ticketsByUser = async (data) => {
   try {
     const response = await fetch(`${API_URL}/tickets/usuario/${data}`, {
