@@ -15,23 +15,17 @@ export function ProfileUI() {
       <div className="p-4 mt-14">
         <div className="grid grid-cols-1 gap-4">
           <p className="text-xl font-medium text-golden">
-            ID <span className="text-neutral-500">#{user.id}</span>
+            ID <span className="text-neutral-500">#{user.idUsuario}</span>
           </p>
           <p className="text-xl font-medium text-golden">Nombre completo</p>
           <p className="">
-            {user.name} {user.lastName}
+            {user.nombreUsuario} {user.apellidoUsuario}
           </p>
           <p className="text-xl font-medium text-golden">Correo</p>
-          <p className="">{user.email}</p>
+          <p className="">{user.correoUsuario}</p>
           <p className="text-xl font-medium text-golden">Rol</p>
           <p className="">
-            {user.role == "admin"
-              ? "Administrador"
-              : user.role == "tech"
-              ? "Técnico"
-              : user.role == "secre"
-              ? "Secretario"
-              : "Usuario"}
+            {user.rolUsuario}
           </p>
         </div>
       </div>

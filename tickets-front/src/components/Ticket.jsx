@@ -9,7 +9,6 @@ import { EditarTicketModal } from "./Modales/components/EditarTicketModal";
 import DeleteTicket from "../components/Modales/deleteTicket";
 import { BiBookAdd } from "react-icons/bi";
 
-
 import dayjs from "dayjs";
 import AddCitaModal from "./Modales/components/AddCitaModal";
 
@@ -64,6 +63,10 @@ export function Ticket({ ticket }) {
 
   const fechaSolicitud = dayjs(ticket.fechaSolicitudTicket);
 
+  const isDisabled =
+    ticket.statusTicket === "Completado" ||
+    ticket.statusTicket === "No Completado";
+
   return (
     <>
       <div
@@ -76,7 +79,11 @@ export function Ticket({ ticket }) {
           ticket={ticket}
           isOpen={modals.deleteTicket}
         />
-        <AddCitaModal ticket={ticket} handleCloseAddCita={handleCloseDeleteCita} isOpen={modals.addCita} />
+        <AddCitaModal
+          ticket={ticket}
+          handleCloseAddCita={handleCloseDeleteCita}
+          isOpen={modals.addCita}
+        />
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center w-full">
@@ -94,8 +101,16 @@ export function Ticket({ ticket }) {
                 onClick={() => setInformationModal(objetoModal)}
               />
               <BiBookAdd
-                className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
-                onClick={() => toggleModal("addCita", true)}
+                className={`text-2xl transition-all ${
+                  isDisabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:text-golden hover:scale-110 cursor-pointer"
+                }`}
+                onClick={() => {
+                  if (!isDisabled) {
+                    toggleModal("addCita", true);
+                  }
+                }}
               />
               <RiDeleteBin6Line
                 className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
@@ -137,7 +152,11 @@ export function Ticket({ ticket }) {
                 : dayjs(ticket.fechaFinalizadoTicket).format("DD/MM/YYYY")}
             </p>
           </div>
-          <div className={`p-4 col-span-${user.rolUsuario == "Administrador" ? 2 : "full"} rounded-lg bg-neutral-700`}>
+          <div
+            className={`p-4 col-span-${
+              user.rolUsuario == "Administrador" ? 2 : "full"
+            } rounded-lg bg-neutral-700`}
+          >
             <p>Descripción</p>
             <p>{ticket.descripcionTicket}</p>
           </div>
@@ -148,7 +167,10 @@ export function Ticket({ ticket }) {
                 {ticket.usuario.nombreUsuario} {ticket.usuario.apellidoUsuario}
               </p>
               <p>{ticket.usuario.emailUsuario}</p>
-              <p>Puesto #{ticket.usuario.puestoUsuario}: {ticket.usuario.Puesto.nombrePuesto}</p>
+              <p>
+                Puesto #{ticket.usuario.puestoUsuario}:{" "}
+                {ticket.usuario.Puesto.nombrePuesto}
+              </p>
             </div>
           )}
         </div>

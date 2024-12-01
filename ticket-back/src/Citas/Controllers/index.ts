@@ -158,7 +158,26 @@ export const GetAllCitas = async (
         { model: Ticket, as: "ticket" },
         { model: Usuario, as: "tecnicos" },
       ],
+      order: [
+        [
+          sequelize.literal(`
+            CASE 
+              WHEN \`ticket\`.\`statusTicket\` = 'Pendiente' THEN 1
+              WHEN \`ticket\`.\`statusTicket\` = 'No Completado' THEN 2
+              WHEN \`ticket\`.\`statusTicket\` = 'En proceso' THEN 3
+              WHEN \`ticket\`.\`statusTicket\` = 'Completado' THEN 4
+              ELSE 5
+            END
+          `),
+          "ASC",
+        ],
+        // Ordenar por prioridadTicket: más bajo primero
+        ["ticket", "prioridadTicket", "ASC"],
+        // Ordenar por fechaSolicitadoTicket: más reciente primero
+        ["ticket", "fechaSolicitadoTicket", "DESC"],
+      ],
     });
+
     res
       .status(200)
       .json({ message: "Citas obtenidas exitosamente.", data: citas });
@@ -202,6 +221,24 @@ export const GetCitaByUsuario = async (
       where: {
         idTicket: { [Op.in]: ticketIds },
       },
+      order: [
+        [
+          sequelize.literal(`
+            CASE 
+              WHEN \`ticket\`.\`statusTicket\` = 'Pendiente' THEN 1
+              WHEN \`ticket\`.\`statusTicket\` = 'No Completado' THEN 2
+              WHEN \`ticket\`.\`statusTicket\` = 'En proceso' THEN 3
+              WHEN \`ticket\`.\`statusTicket\` = 'Completado' THEN 4
+              ELSE 5
+            END
+          `),
+          "ASC",
+        ],
+        // Ordenar por prioridadTicket: más bajo primero
+        ["ticket", "prioridadTicket", "ASC"],
+        // Ordenar por fechaSolicitadoTicket: más reciente primero
+        ["ticket", "fechaSolicitadoTicket", "DESC"],
+      ],
     });
 
     return res
@@ -274,17 +311,17 @@ export const DeleteCitaById = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-  /*   try {
+    try {
     const rowsDeleted = await Cita.destroy({ where: { idCita: req.params.id } });
 
     if (!rowsDeleted) {
       return res.status(404).json({ error: "Cita no encontrada" });
     }
 
-    res.status(200).json({ message: "Cita eliminada exitosamente" });
+    res.status(200).json({ message: "Cita eliminada exitosamente", ok: true }); 
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  } */
+    res.status(500).json({ error});
+  }
 };
 
 // Completar una cita
@@ -325,7 +362,10 @@ export const CompleteCitaById = async (
     }
 
     // Cambiar el estado del ticket
-    await ticket.update({ statusTicket: newStatus, fechaFinalizadoTicket: new Date() });
+    await ticket.update({
+      statusTicket: newStatus,
+      fechaFinalizadoTicket: new Date(),
+    });
 
     // Completar la cita
     await cita.update({ fechaFinCita: new Date() });
@@ -381,6 +421,24 @@ export const GetCitasByTecnico = async (
             "descripcionTicket",
           ],
         },
+      ],
+      order: [
+        [
+          sequelize.literal(`
+            CASE 
+              WHEN \`ticket\`.\`statusTicket\` = 'Pendiente' THEN 1
+              WHEN \`ticket\`.\`statusTicket\` = 'No Completado' THEN 2
+              WHEN \`ticket\`.\`statusTicket\` = 'En proceso' THEN 3
+              WHEN \`ticket\`.\`statusTicket\` = 'Completado' THEN 4
+              ELSE 5
+            END
+          `),
+          "ASC",
+        ],
+        // Ordenar por prioridadTicket: más bajo primero
+        ["ticket", "prioridadTicket", "ASC"],
+        // Ordenar por fechaSolicitadoTicket: más reciente primero
+        ["ticket", "fechaSolicitadoTicket", "DESC"],
       ],
     });
 

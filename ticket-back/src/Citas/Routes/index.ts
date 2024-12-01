@@ -13,12 +13,12 @@ router.get("/citas/:id", GetCitaById);
 
 router.put("/citas/:id", UpdateCitaById);
 
-router.delete("/citas/:id", DeleteCitaById);
-
 router.get("/citas/usuario/:id", GetCitaByUsuario);
 
 router.get("/citas/tecnico/:id", GetCitasByTecnico);
 
 router.put("/citas/complete/:id", CompleteCitaById);
+
+router.delete("/citas/delete/:id", DeleteCitaById);
 
 export { router };

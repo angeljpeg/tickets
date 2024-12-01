@@ -1,4 +1,4 @@
-import { queryGet, queryPost, queryPut } from "./const.js";
+import { queryGet, queryPost, queryPut, queryDelete } from "./const.js";
 
 export const getAllCitas = async () => {
   try {
@@ -43,6 +43,15 @@ export const completeCita = async (data) => {
       newStatus: data.newStatus,
     };
     const response = await queryPut(`citas/complete/${data.idCita}`, bodyData);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteCita = async (data) => {
+  try {
+    const response = await queryDelete(`citas/delete/${data}`);
     return response;
   } catch (error) {
     console.log(error);

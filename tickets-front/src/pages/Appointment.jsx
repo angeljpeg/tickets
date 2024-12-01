@@ -1,9 +1,10 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import UserContext from "../context/UserContext";
 import { Cita } from "../components/Cita";
 import { CiFilter } from "react-icons/ci";
 
 import { getAllCitas, getCitaByUser, getCitaByTecnico } from "../api/citas.js";
+import CitasFilter from "../components/Modales/CitasFilter.jsx";
 
 export function AppointmentUI() {
   const { user } = useContext(UserContext);
@@ -12,21 +13,31 @@ export function AppointmentUI() {
   const [modals, setModals] = useState({
     filter: false,
   });
+  const [filters, setFilters] = useState({
+    idCita: "",
+    idTicket: "",
+    idTecnico: "",
+    idUsuario: "",
+    fechaInicioCita: "",
+    fechaFinCita: "",
+  });
 
   // Función para alternar visibilidad de modales
   const toggleModal = (modalName, isVisible) => {
     setModals((prev) => ({ ...prev, [modalName]: isVisible }));
   };
 
+  const handleCloseFilter = () => toggleModal("filter", false);
+
   useEffect(() => {
-    const fetchTickets = async () => {
+    const fetchCitas = async () => {
       try {
         let response;
         if (user?.rolUsuario === "Usuario") {
           response = await getCitaByUser(user.idUsuario);
         } else if (user?.rolUsuario === "Administrador") {
           response = await getAllCitas();
-        } else if (user?.rolUsuario === "Tecnico") { 
+        } else if (user?.rolUsuario === "Tecnico") {
           response = await getCitaByTecnico(user.idUsuario);
         }
 
@@ -34,16 +45,127 @@ export function AppointmentUI() {
           setCitas(response.data.rows);
           setTotalCitas(response.data.count);
         } else {
-          setCitas([]); // Establecer un array vacío si no hay datos válidos
+          setCitas([]);
         }
       } catch (error) {
-        console.error("Error fetching tickets:", error);
+        console.error("Error fetching citas:", error);
         setCitas([]);
       }
     };
 
-    fetchTickets();
+    fetchCitas();
   }, [user]);
+
+  // Reiniciar filtros
+  const handleRestartFilters = () => {
+    setFilters({
+      idCita: "",
+      idTicket: "",
+      idTecnico: "",
+      idUsuario: "",
+      fechaInicioCita: "",
+      fechaFinCita: "",
+    });
+    toggleModal("filter", false);
+  };
+
+  // Función para manejar el cambio de filtros
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  // Función auxiliar para operadores
+  const filterByOperator = (value, operator, filterValue) => {
+    if (!value || !filterValue) return true;
+    switch (operator) {
+      case ">":
+        return value > filterValue;
+      case "<":
+        return value < filterValue;
+      case "=":
+        return value === filterValue;
+      case ">=":
+        return value >= filterValue;
+      case "<=":
+        return value <= filterValue;
+      default:
+        return true;
+    }
+  };
+
+  // Filtrar citas
+  const filteredCitas = useMemo(() => {
+    let filtered = [...citas];
+
+    if (filters.idCita) {
+      filtered = filtered.filter(
+        (cita) => cita.idCita === parseInt(filters.idCita, 10)
+      );
+    }
+
+    if (filters.idTicket) {
+      filtered = filtered.filter(
+        (cita) => cita.idTicket === parseInt(filters.idTicket, 10)
+      );
+    }
+
+    if (filters.idTecnico) {
+      filtered = filtered.filter((cita) =>
+        cita.tecnicos.some(
+          (tecnico) => tecnico.idUsuario === parseInt(filters.idTecnico, 10)
+        )
+      );
+    }
+
+    if (filters.idUsuario) {
+      filtered = filtered.filter(
+        (cita) => cita.ticket.idUsuario === parseInt(filters.idUsuario, 10)
+      );
+    }
+
+    if (filters.fechaInicioCita) {
+      filtered = filtered.filter((cita) =>
+        filterByOperator(
+          new Date(cita.fechaInicioCita).toISOString().split("T")[0],
+          "=",
+          filters.fechaInicioCita
+        )
+      );
+    }
+
+    if (filters.fechaFinCita) {
+      filtered = filtered.filter((cita) =>
+        filterByOperator(
+          new Date(cita.fechaFinCita).toISOString().split("T")[0],
+          "=",
+          filters.fechaFinCita
+        )
+      );
+    }
+
+    return filtered;
+  }, [citas, filters]);
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 5;
+
+  const totalPages = Math.ceil(filteredCitas.length / ticketsPerPage);
+
+  const visibleTickets = useMemo(() => {
+    const startIndex = (currentPage - 1) * ticketsPerPage;
+    const endIndex = startIndex + ticketsPerPage;
+    return filteredCitas.slice(startIndex, endIndex);
+  }, [filteredCitas, currentPage, ticketsPerPage]);
+
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <div className="w-full h-[calc(100vh-4rem)]">
@@ -55,23 +177,58 @@ export function AppointmentUI() {
 
       {/* Botones de Modales */}
       <div className="absolute flex gap-2 right-6 bottom-4">
-        {/* Modal Filter */}
-        {user.rolUsuario !== "Usuario" && (
-          <button
-            className="p-4 transition-all duration-300 ease-in-out rounded-lg hover:bg-golden hover:text-black bg-neutral-950 text-neutral-300"
-            onClick={() => toggleModal("addCita", true)}
-          >
-            <CiFilter className="text-3xl" />
-          </button>
-        )}
+        <button
+          className="p-4 transition-all duration-300 ease-in-out rounded-lg hover:bg-golden hover:text-black bg-neutral-950 text-neutral-300"
+          onClick={() => toggleModal("filter", true)}
+        >
+          <CiFilter className="text-3xl" />
+        </button>
       </div>
 
-      {/* Lista de tickets */}
+      {/* Lista de citas */}
       <div className="p-4 mt-14">
         <div className="grid grid-cols-1 gap-4">
-          {citas.map((cita, index) => (
+          {visibleTickets.map((cita, index) => (
             <Cita cita={cita} key={index} />
           ))}
+        </div>
+      </div>
+
+      {/* Modal de Filtro */}
+      {modals.filter && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="p-4 rounded-lg max-w-[400px] w-[400px] bg-neutral-800">
+            <CitasFilter
+              handleClose={handleCloseFilter}
+              handleFilterChange={handleFilterChange}
+              handleRestartFilters={handleRestartFilters}
+              filters={filters}
+            />
+          </div>
+        </div>
+      )}
+
+
+      {/* Paginación */}
+      <div className="py-4">
+        <div className="flex justify-center items-center gap-2">
+          <button
+            className="px-4 py-2 text-sm bg-neutral-800 text-neutral-300 rounded-lg"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            Anterior
+          </button>
+          <span className="text-neutral-500">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            className="px-4 py-2 text-sm bg-neutral-800 text-neutral-300 rounded-lg"
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
     </div>

@@ -122,6 +122,24 @@ export function TicketsUI() {
     return filtered;
   }, [tickets, filters]);
 
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const ticketsPerPage = 5;
+
+  const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage);
+
+  const visibleTickets = useMemo(() => {
+    const startIndex = (currentPage - 1) * ticketsPerPage;
+    const endIndex = startIndex + ticketsPerPage;
+    return filteredTickets.slice(startIndex, endIndex);
+  }, [filteredTickets, currentPage, ticketsPerPage]);
+
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   // Cargar tickets del usuario al montar el componente
   useEffect(() => {
     const fetchTickets = async () => {
@@ -216,13 +234,36 @@ export function TicketsUI() {
       {/* Listado de Tickets */}
       <div className="p-4 mt-14">
         <div className="grid grid-cols-1 gap-4">
-          {filteredTickets.map((ticket) => (
+          {visibleTickets.map((ticket) => (
             <Ticket
               key={ticket.idTicket}
               ticket={ticket}
               toggleModal={toggleModal}
             />
           ))}
+        </div>
+      </div>
+
+      {/* Paginación */}
+      <div className="py-4">
+        <div className="flex justify-center items-center gap-2">
+          <button
+            className="px-4 py-2 text-sm bg-neutral-800 text-neutral-300 rounded-lg"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+          >
+            Anterior
+          </button>
+          <span className="text-neutral-500">
+            Página {currentPage} de {totalPages}
+          </span>
+          <button
+            className="px-4 py-2 text-sm bg-neutral-800 text-neutral-300 rounded-lg"
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+          >
+            Siguiente
+          </button>
         </div>
       </div>
     </div>

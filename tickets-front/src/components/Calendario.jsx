@@ -187,8 +187,7 @@ const Calendar = () => {
                         </p>
                         <p>
                           Hora:{" "}
-                          {format(parseISO(appt.fechaInicioCita), "HH:mm")} -{" "}
-                          {format(parseISO(appt.fechaFinCita), "HH:mm")}
+                          {format(parseISO(appt.fechaInicioCita), "HH:mm")}
                         </p>
                         <p>ID Ticket: {appt.ticket.idTicket}</p>
                         <p>
