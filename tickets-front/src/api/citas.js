@@ -17,3 +17,12 @@ export const addCita = async (data) => {
         console.log(error)
     }
 }
+
+export const getCitaByUser = async (data) => {
+    try {
+        const response = await queryGet(`citas/usuario/${data}`)
+        return response
+    } catch (error) {
+        console.log(error)
+    }
+}

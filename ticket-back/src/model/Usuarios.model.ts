@@ -17,6 +17,7 @@ class Usuario extends Model<
   InferAttributes<Usuario>,
   InferCreationAttributes<Usuario>
 > {
+  [x: string]: any;
   declare idUsuario: CreationOptional<number>;
   declare nombreUsuario: string;
   declare apellidoUsuario: string;

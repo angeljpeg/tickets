@@ -30,7 +30,9 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
     const fechaInicio = new Date(fechaInicioCita);
     const fechaFin = new Date(fechaFinCita);
     if (fechaInicio >= fechaFin) {
-      return res.status(400).json({ message: "El rango de fechas no es válido" });
+      return res
+        .status(400)
+        .json({ message: "El rango de fechas no es válido" });
     }
 
     // Verificar si hay citas existentes que se solapan con el nuevo rango de fechas
@@ -154,9 +156,12 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
 
     // Confirmar la transacción
     await transaction.commit();
-    res
-      .status(201)
-      .json({ message: "Cita creada con éxito", data: { cita, tecnicosCita }, status: 201, ok: true });
+    res.status(201).json({
+      message: "Cita creada con éxito",
+      data: { cita, tecnicosCita },
+      status: 201,
+      ok: true,
+    });
   } catch (error) {
     if (transaction) await transaction.rollback();
     console.error("Error:", error);
@@ -181,6 +186,49 @@ export const GetAllCitas = async (
       .json({ message: "Citas obtenidas exitosamente.", data: citas });
   } catch (error) {
     res.status(500).json({ error });
+  }
+};
+
+// Obtener una cita por Usuario
+export const GetCitaByUsuario = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID de usuario no especificado" });
+    }
+
+    // Buscar usuario y cargar los tickets relacionados
+    const usuario = await Usuario.findByPk(id, {
+      include: [{ model: Ticket, as: "tickets" }],
+    });
+
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    console.log(usuario);
+
+    // Extraer los IDs de los tickets del usuario
+    const ticketIds = usuario.tickets.map((ticket: any) => ticket.idTicket);
+
+    // Buscar citas relacionadas con estos tickets
+    const citas = await Cita.findAndCountAll({
+      include: [{ model: Ticket, as: "ticket" }],
+      where: {
+        idTicket: { [Op.in]: ticketIds },
+      },
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Citas obtenidas exitosamente.", data: citas });
+  } catch (error) {
+    console.error("Error al obtener citas por usuario:", error);
+    return res.status(500).json({ message: "Error del servidor", error });
   }
 };
 
