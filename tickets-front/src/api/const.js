@@ -27,3 +27,15 @@ export const queryPost = async (path, params) => {
     });
     return res.json();
 }
+
+export const queryPut = async (path, params) => {
+    const url = `${API_URL}/${path}`;
+    const res = await fetch(url, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+    });
+    return res.json();
+}

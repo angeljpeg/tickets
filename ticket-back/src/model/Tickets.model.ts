@@ -10,7 +10,8 @@ import {
 enum StatusTickets {
     Completado = "Completado",
     EnProceso = "En Proceso",
-    Pendiente = "Pendiente"
+    Pendiente = "Pendiente",
+    No_Completado = "No Completado",
 }
 
 class Ticket extends Model<

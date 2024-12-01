@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { HiOutlineX } from "react-icons/hi";
 import { useContext } from "react";
 import UserContext from "../context/UserContext";
-import {citas} from './data/calendarData'
 import {
   format,
   startOfMonth,
@@ -16,11 +15,13 @@ import {
   isSameMonth,
   parseISO,
 } from "date-fns";
+import { getAllCitas, getCitaByUser, getCitaByTecnico } from "../api/citas.js";
 
 const Calendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null); // Para mostrar en el modal
-  const [appointments, setAppointments] = useState(citas);
+  const [appointments, setAppointments] = useState([]);
+  const { user } = useContext(UserContext);
 
   const startDate = startOfWeek(startOfMonth(currentMonth));
   const endDate = endOfWeek(endOfMonth(currentMonth));
@@ -42,7 +43,9 @@ const Calendar = () => {
   };
 
   const formatAppointments = (date) =>
-    appointments.filter((appt) => isSameDay(parseISO(appt.fechaInicio), date));
+    appointments.filter((appt) =>
+      isSameDay(parseISO(appt.fechaInicioCita), date)
+    );
 
   const [isVisible, setIsVisible] = useState(false);
 
@@ -52,14 +55,38 @@ const Calendar = () => {
     }
   }, [selectedDate]);
 
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        let response;
+        if (user?.rolUsuario === "Usuario") {
+          response = await getCitaByUser(user.idUsuario);
+        } else if (user?.rolUsuario === "Administrador") {
+          response = await getAllCitas();
+        } else if (user?.rolUsuario === "Tecnico") {
+          response = await getCitaByTecnico(user.idUsuario);
+        }
+
+        if (response && Array.isArray(response.data.rows)) {
+          setAppointments(response.data.rows);
+        } else {
+          setAppointments([]); // Establecer un array vacío si no hay datos válidos
+        }
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+        setAppointments([]);
+      }
+    };
+
+    fetchAppointments();
+  }, [user]);
+
   const handleClose = () => {
     setIsVisible(false);
     setTimeout(() => {
       setSelectedDate(null);
     }, 300); // Tiempo igual a la duración de la transición
   };
-
-  const { user } = useContext(UserContext);
 
   return (
     <div className="overflow-scroll overflow-y-hidden lg:overflow-hidden">
@@ -105,52 +132,23 @@ const Calendar = () => {
                 onClick={() => setSelectedDate(appointmentsOnDate)}
               >
                 <div className="text-sm font-bold">{format(date, "d")}</div>
-                {appointmentsOnDate.map((appt) =>
-                  user.role == "tech"
-                    ? appt.idTecnico == user.id && (
-                        <div
-                          key={appt.id}
-                          className={`px-1 mt-1 text-xs rounded ${
-                            appt.prioridadTicket == "BAJO"
-                              ? "bg-green-500"
-                              : appt.prioridadTicket == "ALTO"
-                              ? "bg-red-500"
-                              : "bg-yellow-500"
-                          } text-neutral-500`}
-                        >
-                          {format(parseISO(appt.fechaInicio), "HH:mm")}
-                        </div>
-                      )
-                    : user.role == "user"
-                    ? appt.idUsuario == user.id && (
-                        <div
-                          key={appt.id}
-                          className={`px-1 mt-1 text-xs rounded ${
-                            appt.prioridadTicket == "BAJO"
-                              ? "bg-green-500"
-                              : appt.prioridadTicket == "ALTO"
-                              ? "bg-red-500"
-                              : "bg-yellow-500"
-                          } text-neutral-700`}
-                        >
-                          {format(parseISO(appt.fechaInicio), "HH:mm")}
-                        </div>
-                      )
-                    : (user.role == "secre" || user.role == "admin") && (
-                        <div
-                          key={appt.id}
-                          className={`px-1 mt-1 text-xs rounded ${
-                            appt.prioridadTicket == "BAJO"
-                              ? "bg-green-500"
-                              : appt.prioridadTicket == "ALTO"
-                              ? "bg-red-500"
-                              : "bg-yellow-500"
-                          } text-neutral-700`}
-                        >
-                          {format(parseISO(appt.fechaInicio), "HH:mm")}
-                        </div>
-                      )
-                )}
+                {appointmentsOnDate.map((appt) => {
+                  const priorityClass =
+                    appt.ticket.prioridadTicket === "1"
+                      ? "bg-green-500"
+                      : appt.ticket.prioridadTicket === "2"
+                      ? "bg-yellow-500"
+                      : "bg-red-500";
+
+                  return (
+                    <div
+                      key={appt.idCita}
+                      className={`px-1 mt-1 text-xs rounded ${priorityClass} text-neutral-700`}
+                    >
+                      {format(parseISO(appt.fechaInicioCita), "HH:mm")}
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
@@ -179,100 +177,36 @@ const Calendar = () => {
               <div className="max-h-[300px] overflow-x-hidden overflow-scroll">
                 {selectedDate.length > 0 ? (
                   <ul>
-                    {selectedDate.map((appt) =>
-                      user.role == "tech"
-                        ? appt.idTecnico == user.id && (
-                            <li key={appt.id} className="mt-2">
-                              <p className="text-xl">
-                                Cita{" "}
-                                <span className="font-medium text-neutral-500">
-                                  #{appt.id}
-                                </span>
-                              </p>
-                              <p>
-                                Hora:{" "}
-                                {format(parseISO(appt.fechaInicio), "HH:mm")} -{" "}
-                                {format(parseISO(appt.fechaFin), "HH:mm")}
-                              </p>
-                              <p>ID Ticket: {appt.idTicket}</p>
-                              <p>
-                                Prioridad:{" "}
-                                <span
-                                  className={`font-semibold ${
-                                    appt.prioridadTicket == "BAJO"
-                                      ? "text-green-500"
-                                      : appt.prioridadTicket == "ALTO"
-                                      ? "text-red-500"
-                                      : "text-yellow-500"
-                                  }`}
-                                >
-                                  {appt.prioridadTicket}
-                                </span>
-                              </p>
-                            </li>
-                          )
-                        : user.role == "user"
-                        ? appt.idUsuario == user.id && (
-                            <li key={appt.id} className="mt-2">
-                              <p className="text-xl">
-                                Cita{" "}
-                                <span className="font-medium text-neutral-500">
-                                  #{appt.id}
-                                </span>
-                              </p>
-                              <p>
-                                Hora:{" "}
-                                {format(parseISO(appt.fechaInicio), "HH:mm")} -{" "}
-                                {format(parseISO(appt.fechaFin), "HH:mm")}
-                              </p>
-                              <p>ID Ticket: {appt.idTicket}</p>
-                              <p>
-                                Prioridad:{" "}
-                                <span
-                                  className={`font-semibold ${
-                                    appt.prioridadTicket == "BAJO"
-                                      ? "text-green-500"
-                                      : appt.prioridadTicket == "ALTO"
-                                      ? "text-red-500"
-                                      : "text-yellow-500"
-                                  }`}
-                                >
-                                  {appt.prioridadTicket}
-                                </span>
-                              </p>
-                            </li>
-                          )
-                        : (user.role == "secre" || user.role == "admin") && (
-                            <li key={appt.id} className="mt-2">
-                              <p className="text-xl">
-                                Cita{" "}
-                                <span className="font-medium text-neutral-500">
-                                  #{appt.id}
-                                </span>
-                              </p>
-                              <p>
-                                Hora:{" "}
-                                {format(parseISO(appt.fechaInicio), "HH:mm")} -{" "}
-                                {format(parseISO(appt.fechaFin), "HH:mm")}
-                              </p>
-                              <p>ID Ticket: {appt.idTicket}</p>
-                              <p>
-                                Prioridad:{" "}
-                                <span
-                                  className={`font-semibold ${
-                                    appt.prioridadTicket == "BAJO"
-                                      ? "text-green-500"
-                                      : appt.prioridadTicket == "ALTO"
-                                      ? "text-red-500"
-                                      : "text-yellow-500"
-                                  }`}
-                                >
-                                  {appt.prioridadTicket}
-                                </span>
-                              </p>
-                            </li>
-                          )
-                    )}
+                    {selectedDate.map((appt) => (
+                      <li key={appt.idCita} className="mt-2">
+                        <p className="text-xl">
+                          Cita{" "}
+                          <span className="font-medium text-neutral-500">
+                            #{appt.idCita}
+                          </span>
+                        </p>
+                        <p>
+                          Hora:{" "}
+                          {format(parseISO(appt.fechaInicioCita), "HH:mm")} -{" "}
+                          {format(parseISO(appt.fechaFinCita), "HH:mm")}
+                        </p>
+                        <p>ID Ticket: {appt.ticket.idTicket}</p>
+                        <p>
+                          Prioridad:{" "}
+                          <span
+                            className={`font-semibold ${
+                              appt.ticket.prioridadTicket === "1"
+                                ? "text-green-500"
+                                : appt.ticket.prioridadTicket === "2"
+                                ? "text-yellow-500"
+                                : "text-red-500"
+                            }`}
+                          >
+                            {appt.ticket.prioridadTicket}
+                          </span>
+                        </p>
+                      </li>
+                    ))}
                   </ul>
                 ) : (
                   <p>No hay citas para este día.</p>

@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS  `usuarios` (
 
 -- SELECT * FROM tickets
 -- DROP TABLE `tickets`
-CREATE TABLE `tickets` (
+CREATE TABLE IF NOT EXISTS `tickets` (
   `idTicket` int(11) NOT NULL AUTO_INCREMENT,
   `idUsuario` int(11) NOT NULL,
   `statusTicket` enum("En Proceso", "Completado", "Pendiente", "No Completado"),
@@ -45,7 +45,7 @@ CREATE TABLE `tickets` (
 
 -- SELECT * FROM citas
 -- DROP TABLE citas
-CREATE TABLE `citas` (
+CREATE TABLE IF NOT EXISTS `citas` (
   `idCita` int(11) NOT NULL AUTO_INCREMENT,
   `idTicket` int(11) NOT NULL,
   `fechaInicioCita` datetime NOT NULL,
@@ -56,9 +56,9 @@ FOREIGN KEY (`idTicket`) REFERENCES `tickets`(`idTicket`) ON DELETE CASCADE ON U
 
 -- SELECT * FROM tecnicos_citas
 -- DROP TABLE tecnicos_citas
-CREATE TABLE tecnicos_citas (
-  idUsuario INT(11) NOT NULL,
-  idCita INT(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `tecnicos_citas` (
+  `idUsuario` INT(11) NOT NULL,
+  `idCita` INT(11) NOT NULL,
   PRIMARY KEY (idUsuario, idCita),
   FOREIGN KEY (idUsuario) REFERENCES usuarios(idUsuario) ON DELETE CASCADE ON UPDATE CASCADE,
   FOREIGN KEY (idCita) REFERENCES citas(idCita) ON DELETE CASCADE ON UPDATE CASCADE

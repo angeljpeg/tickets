@@ -64,9 +64,10 @@ export const GetAllTickets = async (req: Request, res: Response) => {
           sequelize.literal(`
             CASE 
               WHEN statusTicket = 'Pendiente' THEN 1
-              WHEN statusTicket = 'En proceso' THEN 2
-              WHEN statusTicket = 'Completado' THEN 3
-              ELSE 4
+              WHEN statusTicket = 'No Completado' THEN 2
+              WHEN statusTicket = 'En proceso' THEN 3
+              WHEN statusTicket = 'Completado' THEN 4
+              ELSE 5
             END
           `),
           "ASC",

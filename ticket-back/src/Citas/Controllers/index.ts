@@ -2,117 +2,148 @@ import { Request, Response } from "express";
 import { Cita, Ticket, Usuario, TecnicoCita } from "../../model";
 import { Op, Transaction } from "sequelize";
 import { sequelize } from "../../config";
+import { ok } from "assert";
 
 // Crear una nueva cita
 export const CreateCita = async (req: Request, res: Response): Promise<any> => {
-  const transaction: Transaction = await sequelize.transaction();
+  const MAX_RETRIES = 3; // Número máximo de reintentos
+  let attempts = 0;
 
-  try {
-    const { idTicket, fechaInicioCita, tecnicos } = req.body;
+  while (attempts < MAX_RETRIES) {
+    const transaction: Transaction = await sequelize.transaction();
 
-    // Validación inicial
-    if (
-      !idTicket ||
-      !fechaInicioCita ||
-      !Array.isArray(tecnicos) ||
-      tecnicos.length === 0
-    ) {
-      return res.status(400).json({ message: "Datos de entrada inválidos" });
-    }
+    try {
+      const { idTicket, fechaInicioCita, tecnicos } = req.body;
 
-    const ticket = await Ticket.findByPk(idTicket);
-    if (!ticket) {
-      return res.status(404).json({ message: "Ticket no encontrado" });
-    }
+      if (
+        !idTicket ||
+        !fechaInicioCita ||
+        !Array.isArray(tecnicos) ||
+        tecnicos.length === 0
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Datos de entrada inválidos", ok: false });
+      }
 
-    // Validar formato de fecha de inicio
-    const fechaInicio = new Date(fechaInicioCita);
+      const ticket = await Ticket.findByPk(idTicket, { transaction });
+      if (!ticket) {
+        return res
+          .status(404)
+          .json({ message: "Ticket no encontrado", ok: false });
+      }
 
-    // Verificar si hay citas existentes que se solapan
-    const citasConflicto = await Cita.findAll({
-      where: {
-        fechaInicioCita: {
-          [Op.eq]: fechaInicio, // Verifica si ya existe una cita en esta fecha y hora
-        },
-      },
-    });
+      // Actualizar el estado del ticket primero
+      await ticket.update({ statusTicket: "En Proceso" }, { transaction });
 
-    if (citasConflicto.length > 0) {
-      await transaction.rollback();
-      return res.status(400).json({
-        message: "Ya existe una cita en este rango de fechas",
-        citasConflicto,
-      });
-    }
+      // Validar formato de fecha de inicio
+      const fechaInicio = new Date(fechaInicioCita);
+      const today = new Date();
+      const fechaInicioSoloFecha = fechaInicio.toISOString().split("T")[0];
 
-    // Verificar conflictos de horarios para cada técnico
-    for (const tecnicoId of tecnicos) {
+      if (fechaInicio < today) {
+        return res.status(400).json({
+          message: "La fecha de inicio no puede ser anterior a la fecha actual",
+        });
+      }
+
+      // Verificar si hay citas existentes que se solapan
       const citasConflicto = await Cita.findAll({
-        include: [
-          {
-            model: Usuario,
-            as: "tecnicos",
-            through: { attributes: [] },
-            where: { idUsuario: tecnicoId },
-          },
-        ],
-        where: {
-          fechaInicioCita: {
-            [Op.eq]: fechaInicio,
-          },
-        },
+        where: sequelize.where(
+          sequelize.fn("DATE", sequelize.col("fechaInicioCita")),
+          fechaInicioSoloFecha
+        ),
+        transaction,
       });
 
       if (citasConflicto.length > 0) {
         await transaction.rollback();
         return res.status(400).json({
-          message: `El técnico con ID ${tecnicoId} tiene conflictos de horarios`,
+          message: "Ya existe una cita en este rango de fechas",
           citasConflicto,
         });
       }
-    }
 
-    // Crear la cita
-    const cita = await Cita.create(
-      { idTicket, fechaInicioCita, fechaFinCita: null },
-      { transaction }
-    );
-
-    // Asociar técnicos
-    const tecnicosCita = [];
-    for (const tecnicoId of tecnicos) {
-      const tec = await Usuario.findByPk(tecnicoId);
-      if (!tec || tec.rolUsuario.toUpperCase() !== "TECNICO") {
-        await transaction.rollback();
-        return res.status(400).json({
-          error: "Usuario no es técnico",
-          campo: "tecnicos",
-          valor: tecnicoId,
+      // Verificar conflictos de horarios para cada técnico
+      for (const tecnicoId of tecnicos) {
+        const citasConflicto = await Cita.findAll({
+          include: [
+            {
+              model: Usuario,
+              as: "tecnicos",
+              through: { attributes: [] },
+              where: { idUsuario: tecnicoId },
+            },
+          ],
+          where: {
+            fechaInicioCita: {
+              [Op.eq]: fechaInicio,
+            },
+          },
+          transaction,
         });
+
+        if (citasConflicto.length > 0) {
+          await transaction.rollback();
+          return res.status(400).json({
+            message: `El técnico con ID ${tecnicoId} tiene conflictos de horarios`,
+            citasConflicto,
+          });
+        }
       }
 
-      const tecnicoCita = await TecnicoCita.create(
-        {
-          idUsuario: tecnicoId,
-          idCita: cita.idCita,
-        },
+      // Crear la cita
+      const cita = await Cita.create(
+        { idTicket, fechaInicioCita, fechaFinCita: null },
         { transaction }
       );
-      tecnicosCita.push(tecnicoCita);
-    }
 
-    // Confirmar la transacción
-    await transaction.commit();
-    res.status(201).json({
-      message: "Cita creada con éxito",
-      data: { cita, tecnicosCita },
-      status: 201,
-      ok: true,
-    });
-  } catch (error) {
-    if (transaction) await transaction.rollback();
-    console.error("Error:", error);
-    res.status(500).json({ message: "Error al crear la cita", error });
+      // Asociar técnicos
+      const tecnicosCita = [];
+      for (const tecnicoId of tecnicos) {
+        const tec = await Usuario.findByPk(tecnicoId, { transaction });
+        if (!tec || tec.rolUsuario.toUpperCase() !== "TECNICO") {
+          await transaction.rollback();
+          return res.status(400).json({
+            error: "Usuario no es técnico",
+            campo: "tecnicos",
+            valor: tecnicoId,
+          });
+        }
+
+        const tecnicoCita = await TecnicoCita.create(
+          {
+            idUsuario: tecnicoId,
+            idCita: cita.idCita,
+          },
+          { transaction }
+        );
+        tecnicosCita.push(tecnicoCita);
+      }
+
+      // Confirmar la transacción
+      await transaction.commit();
+      return res.status(201).json({
+        message: "Cita creada con éxito",
+        data: { cita, tecnicosCita },
+        status: 201,
+        ok: true,
+      });
+    } catch (error: any) {
+      await transaction.rollback();
+      if (error.original?.code === "ER_LOCK_WAIT_TIMEOUT") {
+        attempts++;
+        if (attempts >= MAX_RETRIES) {
+          return res.status(500).json({
+            message: "Error al crear la cita: tiempo de espera excedido",
+            error,
+          });
+        }
+        continue; // Reintentar
+      }
+      console.error("Error:", error);
+      return res.status(500).json({ message: "Error al crear la cita", error });
+    }
   }
 };
 
@@ -254,4 +285,112 @@ export const DeleteCitaById = async (
   } catch (error) {
     res.status(500).json({ error: error.message });
   } */
+};
+
+// Completar una cita
+export const CompleteCitaById = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { idUsuario, newStatus } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID de cita no especificado" });
+    }
+
+    const cita = await Cita.findByPk(id);
+
+    if (!cita) {
+      return res.status(404).json({ message: "Cita no encontrada" });
+    }
+
+    // Verificar si la cita ya está completa
+    if (cita.fechaFinCita) {
+      return res.status(400).json({ message: "La cita ya está completa" });
+    }
+
+    // Verificar si el usuario es técnico
+    const tecnico = await Usuario.findByPk(idUsuario);
+    if (!tecnico || tecnico.rolUsuario.toUpperCase() !== "TECNICO") {
+      return res
+        .status(403)
+        .json({ message: "No tiene permisos para completar la cita" });
+    }
+
+    const ticket = await Ticket.findByPk(cita.idTicket);
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket no encontrado" });
+    }
+
+    // Cambiar el estado del ticket
+    await ticket.update({ statusTicket: newStatus, fechaFinalizadoTicket: new Date() });
+
+    // Completar la cita
+    await cita.update({ fechaFinCita: new Date() });
+
+    res.status(200).json({ message: "Cita completada con éxito", ok: true });
+  } catch (error) {
+    res.status(500).json({ message: "Error al completar la cita", error });
+  }
+};
+
+// Obtener Citas por Tecnico
+export const GetCitasByTecnico = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    // Validar que se proporcione un ID
+    if (!id) {
+      return res.status(400).json({ message: "ID de usuario no especificado" });
+    }
+
+    // Buscar usuario para validar que existe y es un técnico
+    const usuario = await Usuario.findByPk(id);
+    if (!usuario) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    if (usuario.rolUsuario.toUpperCase() !== "TECNICO") {
+      return res.status(400).json({ message: "El usuario no es un técnico" });
+    }
+
+    // Buscar todas las citas relacionadas con el técnico
+    const citasPorTecnico = await Cita.findAndCountAll({
+      include: [
+        {
+          model: Usuario,
+          as: "tecnicos",
+          where: { idUsuario: id },
+          through: { attributes: [] }, // Ocultar atributos de la tabla intermedia
+        },
+        {
+          model: Ticket,
+          as: "ticket",
+          attributes: [
+            "idTicket",
+            "tituloTicket",
+            "statusTicket",
+            "prioridadTicket",
+            "fechaSolicitadoTicket",
+            "fechaFinalizadoTicket",
+            "descripcionTicket",
+          ],
+        },
+      ],
+    });
+
+    return res.status(200).json({
+      message: "Citas obtenidas exitosamente.",
+      data: citasPorTecnico,
+      ok: true,
+    });
+  } catch (error) {
+    console.error("Error al obtener citas por técnico:", error);
+    return res.status(500).json({ message: "Error del servidor", error });
+  }
 };

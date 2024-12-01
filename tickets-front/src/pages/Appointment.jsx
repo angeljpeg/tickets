@@ -3,7 +3,7 @@ import UserContext from "../context/UserContext";
 import { Cita } from "../components/Cita";
 import { CiFilter } from "react-icons/ci";
 
-import { getAllCitas, getCitaByUser } from "../api/citas.js";
+import { getAllCitas, getCitaByUser, getCitaByTecnico } from "../api/citas.js";
 
 export function AppointmentUI() {
   const { user } = useContext(UserContext);
@@ -26,6 +26,8 @@ export function AppointmentUI() {
           response = await getCitaByUser(user.idUsuario);
         } else if (user?.rolUsuario === "Administrador") {
           response = await getAllCitas();
+        } else if (user?.rolUsuario === "Tecnico") { 
+          response = await getCitaByTecnico(user.idUsuario);
         }
 
         if (response && Array.isArray(response.data.rows)) {
@@ -43,7 +45,6 @@ export function AppointmentUI() {
     fetchTickets();
   }, [user]);
 
-  console.log(citas);
   return (
     <div className="w-full h-[calc(100vh-4rem)]">
       <div className="absolute top-0 z-1 w-full lg:w-[calc(100%-300px)] h-16 lg:left-[300px] bg-neutral-900 flex items-center">

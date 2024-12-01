@@ -32,14 +32,14 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
     try {
       console.log("Datos enviados:", bodyData);
       const response = await addCita(bodyData);
-      
-      if ( !response.ok) {
+
+      if (!response.ok) {
+        console.log(response);
         return setError(response.message);
       }
 
       handleCloseAddCita();
       alert("Cita agregada con éxito");
-
     } catch (error) {
       console.log(error);
     }
@@ -57,12 +57,14 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
 
   const handleChange = async (e) => {
     try {
-      const response = await getTecnicos(e.target.value);
-      if (response.ok) {
-        setTecnicos(response.data.rows);
-      } else {
-        console.error("Error fetching técnicos:", response);
-        setTecnicos([]);
+      if (e.target.value !== "") {
+        const response = await getTecnicos(e.target.value);
+        if (response.ok) {
+          setTecnicos(response.data.rows);
+        } else {
+          console.error("Error fetching técnicos:", response);
+          setTecnicos([]);
+        }
       }
     } catch (error) {
       console.error("Error fetching técnicos:", error);
@@ -77,7 +79,7 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
     >
       {/* errores */}
       {error && <p className="text-red-500">{error}</p>}
-      
+
       {/* FECHA Y HORA */}
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -88,6 +90,7 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
             {...register("fechaInicio", {
               required: "La fecha de inicio es obligatoria",
             })}
+            autoComplete="off"
           />
           {errors.fechaInicio && (
             <p className="text-red-500 text-sm">{errors.fechaInicio.message}</p>
@@ -101,6 +104,7 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
             {...register("horaInicio", {
               required: "La hora de inicio es obligatoria",
             })}
+            autoComplete="off"
           />
           {errors.horaInicio && (
             <p className="text-red-500 text-sm">{errors.horaInicio.message}</p>
@@ -123,9 +127,13 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
           <h4 className="font-semibold">Resultados</h4>
           {tecnicos.length > 0 ? (
             tecnicos.map((tecnico) => (
-              <div key={tecnico.idUsuario} className="flex items-center py-1 gap-2">
+              <div
+                key={tecnico.idUsuario}
+                className="flex items-center py-1 gap-2"
+              >
                 <span>
-                  #{tecnico.idUsuario} - {tecnico.nombreUsuario} {tecnico.apellidoUsuario}
+                  #{tecnico.idUsuario} - {tecnico.nombreUsuario}{" "}
+                  {tecnico.apellidoUsuario}
                 </span>
                 <button
                   type="button"
