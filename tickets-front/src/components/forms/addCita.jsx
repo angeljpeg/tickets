@@ -14,9 +14,9 @@ export default function AddCita({ handleCloseAddCita }) {
     formState: { errors },
   } = useForm();
 
-  const handleAddCita = () => {
+  const handleAddCita = (data) => {
+    console.log("Formulario:", data);
     console.log("Técnicos seleccionados:", tecnicosSeleccionados);
-    console.log("Formulario:", getValues());
   };
 
   const handleAddTecnico = (tecnico) => {
@@ -49,6 +49,56 @@ export default function AddCita({ handleCloseAddCita }) {
       className="flex flex-col gap-4 p-4"
       onSubmit={handleSubmit(handleAddCita)}
     >
+      {/* FECHA Y HORA */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-lg mb-1">Fecha de Inicio</label>
+          <input
+            type="date"
+            className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
+            {...register("fechaInicio", { required: "La fecha de inicio es obligatoria" })}
+          />
+          {errors.fechaInicio && (
+            <p className="text-red-500 text-sm">{errors.fechaInicio.message}</p>
+          )}
+        </div>
+        <div>
+          <label className="block text-lg mb-1">Hora de Inicio</label>
+          <input
+            type="time"
+            className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
+            {...register("horaInicio", { required: "La hora de inicio es obligatoria" })}
+          />
+          {errors.horaInicio && (
+            <p className="text-red-500 text-sm">{errors.horaInicio.message}</p>
+          )}
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-lg mb-1">Fecha de Fin</label>
+          <input
+            type="date"
+            className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
+            {...register("fechaFin", { required: "La fecha de fin es obligatoria" })}
+          />
+          {errors.fechaFin && (
+            <p className="text-red-500 text-sm">{errors.fechaFin.message}</p>
+          )}
+        </div>
+        <div>
+          <label className="block text-lg mb-1">Hora de Fin</label>
+          <input
+            type="time"
+            className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
+            {...register("horaFin", { required: "La hora de fin es obligatoria" })}
+          />
+          {errors.horaFin && (
+            <p className="text-red-500 text-sm">{errors.horaFin.message}</p>
+          )}
+        </div>
+      </div>
+
       {/* BUSCADOR */}
       <div className="mb-4 w-full">
         <label className="block text-lg mb-1">Buscar Técnico por ID</label>
@@ -70,7 +120,7 @@ export default function AddCita({ handleCloseAddCita }) {
                 </span>
                 <button
                   type="button"
-                  className="px-2 py-1 text-white bg-green-500/50 hover:bg-green-600/80 rounded-3xl"
+                  className="p-1 text-white bg-blue-600 hover:bg-blue-800 rounded"
                   onClick={() => handleAddTecnico(tecnico)}
                 >
                   Seleccionar
@@ -115,7 +165,7 @@ export default function AddCita({ handleCloseAddCita }) {
         </button>
         <button
           type="submit"
-          className="p-2 transition-all duration-300 rounded bg-neutral-600 hover:bg-green-600 hover:text-black"
+          className="p-2 transition-all duration-300 rounded bg-neutral-600 hover:bg-red-600 hover:text-black"
         >
           Guardar
         </button>
