@@ -124,3 +124,29 @@ export const LoginUser = async (req: Request, res: Response): Promise<any> => {
       .json({ message: "Error al realizar el login", error });
   }
 };
+
+// Obtener un Tecnico por ID
+export const GetTecnicoById = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+    console.log(id, " Este es el id");
+    const usuarios = await Usuario.findAndCountAll({
+      where: { idUsuario: id, rolUsuario: "Tecnico" },
+      include: Puesto,
+    });
+
+    if (usuarios.rows.length === 0) {
+      return res.status(404).json({ message: "Usuario no encontrado", data: usuarios, status: 404 });
+    }
+
+    return res.status(200).json({ message: "Usuario obtenido", data: usuarios, status: 200, ok: true });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error al obtener el usuario", error });
+  }
+};
+

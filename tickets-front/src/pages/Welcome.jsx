@@ -15,7 +15,7 @@ export function WelcomeUI() {
         <h1 className="text-6xl font-semibold lg:text-8xl text-golden">
           ¡Hola!{" "}
           <span className="text-4xl font-semibold lg:text-6xl text-neutral-300">
-            {user.name}
+            {user.nombreUsuario}
           </span>
         </h1>
       </div>

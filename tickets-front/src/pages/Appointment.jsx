@@ -4,7 +4,7 @@ import { Cita } from "../components/Cita";
 import { IoIosAdd } from "react-icons/io";
 import { CiFilter } from "react-icons/ci";
 
-import AddCita from "../components/forms/addCita";
+import AddCita from "../components/Modales/components/AddCitaModal.jsx";
 import { getAllCitas } from "../api/citas.js";
 
 export function AppointmentUI() {

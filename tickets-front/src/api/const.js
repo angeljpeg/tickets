@@ -3,6 +3,7 @@ export const API_URL = "http://localhost:4000/api/v1";
 
 export const queryGet = async (path, params) => {
     const url = `${API_URL}/${path}${params ?? ''}`;
+    console.log(url);
     const res = await fetch(url);
     return res.json();
 }

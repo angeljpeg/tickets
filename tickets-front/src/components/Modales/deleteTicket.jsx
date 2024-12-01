@@ -28,7 +28,7 @@ export default function DeleteTicket({ handleClose, ticket, isOpen }) {
         >
           {/* HEADER */}
           <div className="flex items-center justify-between w-full mb-2 h-fit">
-            <header className="text-lg font-bold">Filtrar tickets</header>
+            <header className="text-lg font-bold">Eliminar Ticket</header>
             <HiOutlineX
               onClick={handleClose}
               className="text-3xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer"

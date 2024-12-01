@@ -7,8 +7,11 @@ import { useContext, useState } from "react";
 import UserContext from "../context/UserContext";
 import { EditarTicketModal } from "./Modales/components/EditarTicketModal";
 import DeleteTicket from "../components/Modales/deleteTicket";
+import { BiBookAdd } from "react-icons/bi";
+
 
 import dayjs from "dayjs";
+import AddCitaModal from "./Modales/components/AddCitaModal";
 
 export function Ticket({ ticket }) {
   const {
@@ -19,6 +22,7 @@ export function Ticket({ ticket }) {
   const [modals, setModals] = useState({
     editTicket: false,
     deleteTicket: false,
+    addCita: false,
   });
 
   // Función para alternar visibilidad de modales
@@ -31,6 +35,8 @@ export function Ticket({ ticket }) {
 
   // Cerrar modal de delete  ticket
   const handleCloseDeleteTicket = () => toggleModal("deleteTicket", false);
+  // Cerrar modal de delete  Cita
+  const handleCloseDeleteCita = () => toggleModal("addCita", false);
 
   const priorityColors = {
     1: "text-red-500",
@@ -70,6 +76,7 @@ export function Ticket({ ticket }) {
           ticket={ticket}
           isOpen={modals.deleteTicket}
         />
+        <AddCitaModal ticket={ticket} handleCloseAddCita={handleCloseDeleteCita} isOpen={modals.addCita} />
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center w-full">
@@ -85,6 +92,10 @@ export function Ticket({ ticket }) {
               <TbEdit
                 className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
                 onClick={() => setInformationModal(objetoModal)}
+              />
+              <BiBookAdd
+                className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
+                onClick={() => toggleModal("addCita", true)}
               />
               <RiDeleteBin6Line
                 className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
