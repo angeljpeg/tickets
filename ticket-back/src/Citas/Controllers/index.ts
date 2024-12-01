@@ -8,13 +8,12 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
   const transaction: Transaction = await sequelize.transaction();
 
   try {
-    const { idTicket, fechaInicioCita, fechaFinCita, tecnicos } = req.body;
+    const { idTicket, fechaInicioCita, tecnicos } = req.body;
 
     // Validación inicial
     if (
       !idTicket ||
       !fechaInicioCita ||
-      !fechaFinCita ||
       !Array.isArray(tecnicos) ||
       tecnicos.length === 0
     ) {
@@ -26,44 +25,15 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
       return res.status(404).json({ message: "Ticket no encontrado" });
     }
 
-    // Validar formato de fechas
+    // Validar formato de fecha de inicio
     const fechaInicio = new Date(fechaInicioCita);
-    const fechaFin = new Date(fechaFinCita);
-    if (fechaInicio >= fechaFin) {
-      return res
-        .status(400)
-        .json({ message: "El rango de fechas no es válido" });
-    }
 
-    // Verificar si hay citas existentes que se solapan con el nuevo rango de fechas
+    // Verificar si hay citas existentes que se solapan
     const citasConflicto = await Cita.findAll({
       where: {
-        [Op.or]: [
-          {
-            fechaInicioCita: {
-              [Op.between]: [fechaInicio, fechaFin], // La nueva cita empieza dentro de una cita existente
-            },
-          },
-          {
-            fechaFinCita: {
-              [Op.between]: [fechaInicio, fechaFin], // La nueva cita termina dentro de una cita existente
-            },
-          },
-          {
-            [Op.and]: [
-              {
-                fechaInicioCita: {
-                  [Op.lte]: fechaInicio, // La nueva cita abarca una existente
-                },
-              },
-              {
-                fechaFinCita: {
-                  [Op.gte]: fechaFin, // La nueva cita abarca una existente
-                },
-              },
-            ],
-          },
-        ],
+        fechaInicioCita: {
+          [Op.eq]: fechaInicio, // Verifica si ya existe una cita en esta fecha y hora
+        },
       },
     });
 
@@ -81,38 +51,15 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
         include: [
           {
             model: Usuario,
-            as: "tecnicos", // Usa el alias de la relación definida
-            through: { attributes: [] }, // Esto elimina los atributos de la tabla intermedia, `TecnicoCita`
+            as: "tecnicos",
+            through: { attributes: [] },
             where: { idUsuario: tecnicoId },
           },
         ],
         where: {
-          [Op.or]: [
-            {
-              fechaInicioCita: {
-                [Op.between]: [fechaInicio, fechaFin],
-              },
-            },
-            {
-              fechaFinCita: {
-                [Op.between]: [fechaInicio, fechaFin],
-              },
-            },
-            {
-              [Op.and]: [
-                {
-                  fechaInicioCita: {
-                    [Op.lte]: fechaInicio,
-                  },
-                },
-                {
-                  fechaFinCita: {
-                    [Op.gte]: fechaFin,
-                  },
-                },
-              ],
-            },
-          ],
+          fechaInicioCita: {
+            [Op.eq]: fechaInicio,
+          },
         },
       });
 
@@ -127,7 +74,7 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
 
     // Crear la cita
     const cita = await Cita.create(
-      { idTicket, fechaInicioCita, fechaFinCita },
+      { idTicket, fechaInicioCita, fechaFinCita: null },
       { transaction }
     );
 
@@ -217,7 +164,10 @@ export const GetCitaByUsuario = async (
 
     // Buscar citas relacionadas con estos tickets
     const citas = await Cita.findAndCountAll({
-      include: [{ model: Ticket, as: "ticket" }],
+      include: [
+        { model: Ticket, as: "ticket" },
+        { model: Usuario, as: "tecnicos" },
+      ],
       where: {
         idTicket: { [Op.in]: ticketIds },
       },

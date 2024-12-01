@@ -129,6 +129,7 @@ export function TicketsUI() {
         let response;
         if (user?.rolUsuario === "Usuario") {
           response = await ticketsByUser(user?.idUsuario);
+          console.log(response);
         } else if (user?.rolUsuario === "Administrador") {
           response = await allTickets();
         }
@@ -216,7 +217,11 @@ export function TicketsUI() {
       <div className="p-4 mt-14">
         <div className="grid grid-cols-1 gap-4">
           {filteredTickets.map((ticket) => (
-            <Ticket key={ticket.idTicket} ticket={ticket} toggleModal={toggleModal} />
+            <Ticket
+              key={ticket.idTicket}
+              ticket={ticket}
+              toggleModal={toggleModal}
+            />
           ))}
         </div>
       </div>

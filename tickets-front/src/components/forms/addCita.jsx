@@ -17,12 +17,6 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
 
   const handleAddCita = async (data) => {
     const fechaInicioCita = new Date(`${data.fechaInicio}T${data.horaInicio}`);
-    const fechaFinCita = new Date(`${data.fechaFin}T${data.horaFin}`);
-
-    if (fechaFinCita <= fechaInicioCita) {
-      alert("La fecha y hora de fin deben ser mayores que las de inicio.");
-      return;
-    }
 
     if (tecnicosSeleccionados.length === 0) {
       alert("Debes seleccionar al menos un técnico para agregar la cita.");
@@ -32,7 +26,6 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
     const bodyData = {
       idTicket: ticket.idTicket,
       fechaInicioCita: fechaInicioCita,
-      fechaFinCita: fechaFinCita,
       tecnicos: tecnicosSeleccionados, // Solo los IDs
     };
 
@@ -111,34 +104,6 @@ export default function AddCita({ handleCloseAddCita, ticket }) {
           />
           {errors.horaInicio && (
             <p className="text-red-500 text-sm">{errors.horaInicio.message}</p>
-          )}
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-lg mb-1">Fecha de Fin</label>
-          <input
-            type="date"
-            className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
-            {...register("fechaFin", {
-              required: "La fecha de fin es obligatoria",
-            })}
-          />
-          {errors.fechaFin && (
-            <p className="text-red-500 text-sm">{errors.fechaFin.message}</p>
-          )}
-        </div>
-        <div>
-          <label className="block text-lg mb-1">Hora de Fin</label>
-          <input
-            type="time"
-            className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
-            {...register("horaFin", {
-              required: "La hora de fin es obligatoria",
-            })}
-          />
-          {errors.horaFin && (
-            <p className="text-red-500 text-sm">{errors.horaFin.message}</p>
           )}
         </div>
       </div>

@@ -14,7 +14,7 @@ class Cita extends Model<
 > {
   declare idCita: CreationOptional<number>;
   declare fechaInicioCita: Date;
-  declare fechaFinCita: Date;
+  declare fechaFinCita: Date | null;
   declare idTicket: number;
 }
 
@@ -35,7 +35,7 @@ Cita.init(
     },
     fechaFinCita: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {

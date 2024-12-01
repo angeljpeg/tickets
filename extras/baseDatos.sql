@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS  `usuarios` (
 CREATE TABLE `tickets` (
   `idTicket` int(11) NOT NULL AUTO_INCREMENT,
   `idUsuario` int(11) NOT NULL,
-  `statusTicket` enum("En Proceso", "Completado", "Pendiente"),
+  `statusTicket` enum("En Proceso", "Completado", "Pendiente", "No Completado"),
   `tituloTicket` varchar(255) NOT NULL,
   `descripcionTicket` varchar(255),
   `fechaSolicitadoTicket` datetime NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE `citas` (
   `idCita` int(11) NOT NULL AUTO_INCREMENT,
   `idTicket` int(11) NOT NULL,
   `fechaInicioCita` datetime NOT NULL,
-  `fechaFinCita` datetime NOT NULL,
+  `fechaFinCita` datetime,
   PRIMARY KEY (`idCita`),
 FOREIGN KEY (`idTicket`) REFERENCES `tickets`(`idTicket`) ON DELETE CASCADE ON UPDATE CASCADE
 ); 
