@@ -18,19 +18,19 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
       !Array.isArray(tecnicos) ||
       tecnicos.length === 0
     ) {
-      return res.status(400).json({ error: "Datos de entrada inválidos" });
+      return res.status(400).json({ message: "Datos de entrada inválidos" });
     }
 
     const ticket = await Ticket.findByPk(idTicket);
     if (!ticket) {
-      return res.status(404).json({ error: "Ticket no encontrado" });
+      return res.status(404).json({ message: "Ticket no encontrado" });
     }
 
     // Validar formato de fechas
     const fechaInicio = new Date(fechaInicioCita);
     const fechaFin = new Date(fechaFinCita);
     if (fechaInicio >= fechaFin) {
-      return res.status(400).json({ error: "El rango de fechas no es válido" });
+      return res.status(400).json({ message: "El rango de fechas no es válido" });
     }
 
     // Verificar si hay citas existentes que se solapan con el nuevo rango de fechas
@@ -68,7 +68,7 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
     if (citasConflicto.length > 0) {
       await transaction.rollback();
       return res.status(400).json({
-        error: "Ya existe una cita en este rango de fechas",
+        message: "Ya existe una cita en este rango de fechas",
         citasConflicto,
       });
     }
@@ -117,7 +117,7 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
       if (citasConflicto.length > 0) {
         await transaction.rollback();
         return res.status(400).json({
-          error: `El técnico con ID ${tecnicoId} tiene conflictos de horarios`,
+          message: `El técnico con ID ${tecnicoId} tiene conflictos de horarios`,
           citasConflicto,
         });
       }
@@ -154,11 +154,13 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
 
     // Confirmar la transacción
     await transaction.commit();
-    res.status(201).json({ cita, tecnicosCita });
+    res
+      .status(201)
+      .json({ message: "Cita creada con éxito", data: { cita, tecnicosCita }, status: 201, ok: true });
   } catch (error) {
     if (transaction) await transaction.rollback();
     console.error("Error:", error);
-    res.status(500).json({ error });
+    res.status(500).json({ message: "Error al crear la cita", error });
   }
 };
 
@@ -174,7 +176,9 @@ export const GetAllCitas = async (
         { model: Usuario, as: "tecnicos" },
       ],
     });
-    res.status(200).json({message: "Citas obtenidas exitosamente.", data: citas});
+    res
+      .status(200)
+      .json({ message: "Citas obtenidas exitosamente.", data: citas });
   } catch (error) {
     res.status(500).json({ error });
   }

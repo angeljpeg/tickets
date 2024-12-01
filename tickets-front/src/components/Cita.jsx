@@ -3,9 +3,9 @@ import dayjs from "dayjs";
 
 export function Cita({ cita }) {
   const priorityColors = {
-    ALTO: "text-red-500",
-    MEDIO: "text-yellow-500",
-    BAJO: "text-green-500",
+    1: "text-red-500",
+    2: "text-yellow-500",
+    3: "text-green-500",
   };
 
   const priorityText = {
@@ -52,15 +52,21 @@ export function Cita({ cita }) {
         <div className="p-4 rounded-lg bg-neutral-700">
           <p>Fecha finalizado</p>
           <p>
-          {cita.fechaFinCita == null
-                ? "No finalizado"
-                : dayjs(cita.fechaFinCita).format("DD/MM/YYYY")}
+            {cita.fechaFinCita == null
+              ? "No finalizado"
+              : dayjs(cita.fechaFinCita).format("DD/MM/YYYY")}
           </p>
         </div>
       </div>
       <div className="p-4 mb-4 rounded-lg bg-neutral-700">
         <p>IDs Técnicos asignados</p>
-        <p>{2}</p>
+        {
+          <p>
+            {cita.tecnicos.map(({idUsuario: id}) => (
+              <span key={id}>#{id} </span>
+            ))}
+          </p>
+        }
       </div>
 
       <button className="p-2 transition-all duration-300 rounded-lg w-fit h-fit bg-neutral-600 hover:bg-golden hover:text-black">

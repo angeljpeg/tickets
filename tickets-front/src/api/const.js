@@ -15,3 +15,15 @@ export const queryDelete = async (path, params) => {
     });
     return res.json();
 }
+
+export const queryPost = async (path, params) => {
+    const url = `${API_URL}/${path}`;
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(params)
+    });
+    return res.json();
+}

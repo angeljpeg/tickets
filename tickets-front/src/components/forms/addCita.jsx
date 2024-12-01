@@ -3,26 +3,63 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 
 import { getTecnicos } from "../../api/user.fetch";
+import { addCita } from "../../api/citas.js";
 
-export default function AddCita({ handleCloseAddCita }) {
+export default function AddCita({ handleCloseAddCita, ticket }) {
   const [tecnicos, setTecnicos] = useState([]);
   const [tecnicosSeleccionados, setTecnicosSeleccionados] = useState([]);
+  const [error, setError] = useState(undefined);
   const {
     handleSubmit,
-    getValues,
     register,
     formState: { errors },
   } = useForm();
 
-  const handleAddCita = (data) => {
-    console.log("Formulario:", data);
-    console.log("Técnicos seleccionados:", tecnicosSeleccionados);
+  const handleAddCita = async (data) => {
+    const fechaInicioCita = new Date(`${data.fechaInicio}T${data.horaInicio}`);
+    const fechaFinCita = new Date(`${data.fechaFin}T${data.horaFin}`);
+
+    if (fechaFinCita <= fechaInicioCita) {
+      alert("La fecha y hora de fin deben ser mayores que las de inicio.");
+      return;
+    }
+
+    if (tecnicosSeleccionados.length === 0) {
+      alert("Debes seleccionar al menos un técnico para agregar la cita.");
+      return;
+    }
+
+    const bodyData = {
+      idTicket: ticket.idTicket,
+      fechaInicioCita: fechaInicioCita,
+      fechaFinCita: fechaFinCita,
+      tecnicos: tecnicosSeleccionados, // Solo los IDs
+    };
+
+    try {
+      console.log("Datos enviados:", bodyData);
+      const response = await addCita(bodyData);
+      
+      if ( !response.ok) {
+        return setError(response.message);
+      }
+
+      handleCloseAddCita();
+      alert("Cita agregada con éxito");
+
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleAddTecnico = (tecnico) => {
-    if (!tecnicosSeleccionados.some((t) => t.idUsuario === tecnico.idUsuario)) {
-      setTecnicosSeleccionados([...tecnicosSeleccionados, tecnico]);
+  const handleAddTecnico = (id) => {
+    if (!tecnicosSeleccionados.includes(id)) {
+      setTecnicosSeleccionados([...tecnicosSeleccionados, id]);
     }
+  };
+
+  const handleRemoveTecnico = (id) => {
+    setTecnicosSeleccionados(tecnicosSeleccionados.filter((t) => t !== id));
   };
 
   const handleChange = async (e) => {
@@ -40,15 +77,14 @@ export default function AddCita({ handleCloseAddCita }) {
     }
   };
 
-  const handleRemoveTecnico = (id) => {
-    setTecnicosSeleccionados(tecnicosSeleccionados.filter((t) => t.idUsuario !== id));
-  };
-
   return (
     <form
       className="flex flex-col gap-4 p-4"
       onSubmit={handleSubmit(handleAddCita)}
     >
+      {/* errores */}
+      {error && <p className="text-red-500">{error}</p>}
+      
       {/* FECHA Y HORA */}
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -56,7 +92,9 @@ export default function AddCita({ handleCloseAddCita }) {
           <input
             type="date"
             className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
-            {...register("fechaInicio", { required: "La fecha de inicio es obligatoria" })}
+            {...register("fechaInicio", {
+              required: "La fecha de inicio es obligatoria",
+            })}
           />
           {errors.fechaInicio && (
             <p className="text-red-500 text-sm">{errors.fechaInicio.message}</p>
@@ -67,7 +105,9 @@ export default function AddCita({ handleCloseAddCita }) {
           <input
             type="time"
             className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
-            {...register("horaInicio", { required: "La hora de inicio es obligatoria" })}
+            {...register("horaInicio", {
+              required: "La hora de inicio es obligatoria",
+            })}
           />
           {errors.horaInicio && (
             <p className="text-red-500 text-sm">{errors.horaInicio.message}</p>
@@ -80,7 +120,9 @@ export default function AddCita({ handleCloseAddCita }) {
           <input
             type="date"
             className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
-            {...register("fechaFin", { required: "La fecha de fin es obligatoria" })}
+            {...register("fechaFin", {
+              required: "La fecha de fin es obligatoria",
+            })}
           />
           {errors.fechaFin && (
             <p className="text-red-500 text-sm">{errors.fechaFin.message}</p>
@@ -91,7 +133,9 @@ export default function AddCita({ handleCloseAddCita }) {
           <input
             type="time"
             className="w-full px-4 py-2 my-2 transition-all duration-300 rounded-lg outline-none bg-neutral-800"
-            {...register("horaFin", { required: "La hora de fin es obligatoria" })}
+            {...register("horaFin", {
+              required: "La hora de fin es obligatoria",
+            })}
           />
           {errors.horaFin && (
             <p className="text-red-500 text-sm">{errors.horaFin.message}</p>
@@ -121,7 +165,7 @@ export default function AddCita({ handleCloseAddCita }) {
                 <button
                   type="button"
                   className="p-1 text-white bg-blue-600 hover:bg-blue-800 rounded"
-                  onClick={() => handleAddTecnico(tecnico)}
+                  onClick={() => handleAddTecnico(tecnico.idUsuario)}
                 >
                   Seleccionar
                 </button>
@@ -138,13 +182,13 @@ export default function AddCita({ handleCloseAddCita }) {
         <div>
           <h4 className="font-semibold">Técnicos Seleccionados</h4>
           <ul className="list-disc ml-4">
-            {tecnicosSeleccionados.map((tecnico) => (
-              <li key={tecnico.idUsuario} className="flex justify-between items-center">
-                {tecnico.nombreUsuario} {tecnico.apellidoUsuario} (#{tecnico.idUsuario})
+            {tecnicosSeleccionados.map((id) => (
+              <li key={id} className="flex justify-between items-center">
+                <span>ID Técnico: {id}</span>
                 <button
                   type="button"
                   className="text-red-600 hover:underline ml-2"
-                  onClick={() => handleRemoveTecnico(tecnico.idUsuario)}
+                  onClick={() => handleRemoveTecnico(id)}
                 >
                   Eliminar
                 </button>
@@ -165,7 +209,7 @@ export default function AddCita({ handleCloseAddCita }) {
         </button>
         <button
           type="submit"
-          className="p-2 transition-all duration-300 rounded bg-neutral-600 hover:bg-red-600 hover:text-black"
+          className="p-2 transition-all duration-300 rounded bg-neutral-600 hover:bg-golden hover:text-black"
         >
           Guardar
         </button>
@@ -176,4 +220,5 @@ export default function AddCita({ handleCloseAddCita }) {
 
 AddCita.propTypes = {
   handleCloseAddCita: PropTypes.func.isRequired,
+  ticket: PropTypes.object.isRequired,
 };

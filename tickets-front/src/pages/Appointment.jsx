@@ -1,10 +1,8 @@
 import { useContext, useState, useEffect } from "react";
 import UserContext from "../context/UserContext";
 import { Cita } from "../components/Cita";
-import { IoIosAdd } from "react-icons/io";
 import { CiFilter } from "react-icons/ci";
 
-import AddCita from "../components/Modales/components/AddCitaModal.jsx";
 import { getAllCitas } from "../api/citas.js";
 
 export function AppointmentUI() {
@@ -12,7 +10,7 @@ export function AppointmentUI() {
   const [citas, setCitas] = useState([]);
   const [totalCitas, setTotalCitas] = useState(0);
   const [modals, setModals] = useState({
-    addCita: false,
+    filter: false,
   });
 
   // Función para alternar visibilidad de modales
@@ -20,8 +18,6 @@ export function AppointmentUI() {
     setModals((prev) => ({ ...prev, [modalName]: isVisible }));
   };
 
-  // Cerrar modal de agregar Cita
-  const handleCloseAddCita = () => toggleModal("addCita", false);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -70,28 +66,6 @@ export function AppointmentUI() {
             <CiFilter className="text-3xl" />
           </button>
         )}
-        {/* Modal Add Ticket */}
-        <button
-          className="p-4 transition-all duration-300 ease-in-out rounded-lg hover:bg-golden hover:text-black bg-neutral-950 text-neutral-300"
-          onClick={() => toggleModal("addCita", true)}
-        >
-          <IoIosAdd className="text-3xl" />
-        </button>
-      </div>
-
-      {/* Modal Agregar Ticket */}
-      <div
-        className={`fixed inset-0 flex items-center justify-center bg-black/75 transition-opacity duration-300 ${
-          modals.addCita ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <div
-          className={`p-4 rounded-lg max-w-[400px] w-[400px] bg-neutral-800 transition-transform duration-300 ${
-            modals.addCita ? "scale-100" : "scale-95"
-          }`}
-        >
-          <AddCita handleCloseAddCita={handleCloseAddCita} />
-        </div>
       </div>
 
       {/* Lista de tickets */}
