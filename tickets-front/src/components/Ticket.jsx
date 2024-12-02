@@ -28,9 +28,6 @@ export function Ticket({ ticket }) {
     setModals((prev) => ({ ...prev, [modalName]: isVisible }));
   };
 
-  // Cerrar modal de editar ticket
-  //const handleCloseEditTicket = () => toggleModal("editTicket", false);
-
   // Cerrar modal de delete  ticket
   const handleCloseDeleteTicket = () => toggleModal("deleteTicket", false);
   // Cerrar modal de delete  Cita
@@ -159,13 +156,13 @@ export function Ticket({ ticket }) {
           </div>
           <div
             className={`p-4 col-span-${
-              user.rolUsuario == "Administrador" ? 2 : "full"
+              user.rolUsuario == "Administrador" || user.rolUsuario == "Secretario" ? 2 : "full"
             } rounded-lg bg-neutral-700`}
           >
             <p>Descripción</p>
             <p>{ticket.descripcionTicket}</p>
           </div>
-          {user.rolUsuario == "Administrador" && (
+          {user.rolUsuario == "Administrador" || user.rolUsuario == "Secretario"&& (
             <div className="p-4 col-span-2 rounded-lg bg-neutral-700">
               <p>Usuario</p>
               <p>

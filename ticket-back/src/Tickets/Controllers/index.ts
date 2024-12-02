@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import sequelize from "sequelize";
 import { Ticket, Usuario, Puesto } from "../../model";
-import { ok } from "assert";
 
 export const CreateTicket = async (
   req: Request,

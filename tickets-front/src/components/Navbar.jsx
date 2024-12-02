@@ -80,13 +80,7 @@ export function Navbar() {
                       <p className="text-lg font-bold text-neutral-300">
                         TI<span className="text-sm"> go! </span>
                         <span className="text-sm font-semibold text-neutral-500">
-                          {user.rolUsuario == "Administrador"
-                            ? "Administrador"
-                            : user.role == "Tecnico"
-                            ? "Técnico"
-                            : user.role == "Secretario"
-                            ? "Secretario"
-                            : "Usuario"}
+                          {user.rolUsuario}
                         </span>
                       </p>
                     </div>

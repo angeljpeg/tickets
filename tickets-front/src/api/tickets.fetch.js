@@ -1,11 +1,11 @@
 import { API_URL, queryDelete, queryPut } from "./const.js";
 
-
 export const allTickets = async () => {
   try {
     const response = await fetch(`${API_URL}/tickets`, {
       method: "GET",
     });
+    console.log(response.json()) // OBSERVAR LA RESPUESTA
     return response.json();
   } catch (error) {
     console.log(error);

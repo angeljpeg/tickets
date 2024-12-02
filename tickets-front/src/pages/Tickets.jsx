@@ -149,6 +149,7 @@ export function TicketsUI() {
           response = await ticketsByUser(user?.idUsuario);
           console.log(response);
         } else if (user?.rolUsuario === "Administrador" || user?.rolUsuario === "Secretario") {
+          // LLAMADA DE LA FUNCION
           response = await allTickets();
         }
 
