@@ -29,33 +29,6 @@ export function AppointmentUI() {
 
   const handleCloseFilter = () => toggleModal("filter", false);
 
-  useEffect(() => {
-    const fetchCitas = async () => {
-      try {
-        let response;
-        if (user?.rolUsuario === "Usuario") {
-          response = await getCitaByUser(user.idUsuario);
-        } else if (user?.rolUsuario === "Administrador") {
-          response = await getAllCitas();
-        } else if (user?.rolUsuario === "Tecnico") {
-          response = await getCitaByTecnico(user.idUsuario);
-        }
-
-        if (response && Array.isArray(response.data.rows)) {
-          setCitas(response.data.rows);
-          setTotalCitas(response.data.count);
-        } else {
-          setCitas([]);
-        }
-      } catch (error) {
-        console.error("Error fetching citas:", error);
-        setCitas([]);
-      }
-    };
-
-    fetchCitas();
-  }, [user]);
-
   // Reiniciar filtros
   const handleRestartFilters = () => {
     setFilters({
@@ -167,6 +140,33 @@ export function AppointmentUI() {
     }
   };
 
+  useEffect(() => {
+    const fetchCitas = async () => {
+      try {
+        let response;
+        if (user?.rolUsuario === "Usuario") {
+          response = await getCitaByUser(user.idUsuario);
+        } else if (user?.rolUsuario === "Administrador" || user?.rolUsuario === "Secretario") {
+          response = await getAllCitas();
+        } else if (user?.rolUsuario === "Tecnico") {
+          response = await getCitaByTecnico(user.idUsuario);
+        }
+
+        if (response && Array.isArray(response.data.rows)) {
+          setCitas(response.data.rows);
+          setTotalCitas(response.data.count);
+        } else {
+          setCitas([]);
+        }
+      } catch (error) {
+        console.error("Error fetching citas:", error);
+        setCitas([]);
+      }
+    };
+
+    fetchCitas();
+  }, [user, filteredCitas]);
+
   return (
     <div className="w-full h-[calc(100vh-4rem)]">
       <div className="absolute top-0 z-1 w-full lg:w-[calc(100%-300px)] h-16 lg:left-[300px] bg-neutral-900 flex items-center">
@@ -207,7 +207,6 @@ export function AppointmentUI() {
           </div>
         </div>
       )}
-
 
       {/* Paginación */}
       <div className="py-4">

@@ -6,6 +6,16 @@ SHOW TABLES;
 
 -- SELECT * FROM puestos
 -- DROP TABLE `puestos`
+-- SELECT * FROM usuarios
+-- DROP TABLE `usuarios`
+-- SELECT * FROM tickets
+-- DROP TABLE `tickets`
+-- SELECT * FROM citas
+-- DROP TABLE citas
+-- SELECT * FROM tecnicos_citas
+-- DROP TABLE tecnicos_citas
+
+
 CREATE TABLE IF NOT EXISTS `puestos` (
   `idPuesto` INT(11) NOT NULL AUTO_INCREMENT,
   `nombrePuesto` VARCHAR(50) NOT NULL,
@@ -13,23 +23,20 @@ CREATE TABLE IF NOT EXISTS `puestos` (
   PRIMARY KEY (`idPuesto`)
 );
 
-
--- SELECT * FROM usuarios
--- DROP TABLE `usuarios`
 CREATE TABLE IF NOT EXISTS  `usuarios` (
   `idUsuario` INT(11) NOT NULL AUTO_INCREMENT,
   `puestoUsuario` INT(11) NOT NULL,
   `nombreUsuario` VARCHAR(100) NOT NULL,
   `apellidoUsuario` VARCHAR(100) NOT NULL,
   `correoUsuario` VARCHAR(50) NOT NULL UNIQUE,
-  `claveUsuario` VARCHAR(255) NOT NULL, -- Ajustado para almacenar contraseñas hasheadas
-  `rolUsuario` ENUM('Usuario', 'Tecnico', 'Administrador') NOT NULL,
+  `claveUsuario` VARCHAR(25) NOT NULL,
+  `departamentoUsuario` VARCHAR(255),
+  `plantaUsuario` VARCHAR(255),
+  `rolUsuario` ENUM('Usuario', 'Tecnico', 'Administrador', 'Secretario') NOT NULL,
   PRIMARY KEY (`idUsuario`),
   FOREIGN KEY (`puestoUsuario`) REFERENCES `puestos`(`idPuesto`) ON DELETE CASCADE ON UPDATE CASCADE -- Agregada clave foránea
 );
 
--- SELECT * FROM tickets
--- DROP TABLE `tickets`
 CREATE TABLE IF NOT EXISTS `tickets` (
   `idTicket` int(11) NOT NULL AUTO_INCREMENT,
   `idUsuario` int(11) NOT NULL,
@@ -43,8 +50,6 @@ CREATE TABLE IF NOT EXISTS `tickets` (
   FOREIGN KEY (`idUsuario`) REFERENCES `usuarios`(`idUsuario`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
--- SELECT * FROM citas
--- DROP TABLE citas
 CREATE TABLE IF NOT EXISTS `citas` (
   `idCita` int(11) NOT NULL AUTO_INCREMENT,
   `idTicket` int(11) NOT NULL,
@@ -54,8 +59,6 @@ CREATE TABLE IF NOT EXISTS `citas` (
 FOREIGN KEY (`idTicket`) REFERENCES `tickets`(`idTicket`) ON DELETE CASCADE ON UPDATE CASCADE
 ); 
 
--- SELECT * FROM tecnicos_citas
--- DROP TABLE tecnicos_citas
 CREATE TABLE IF NOT EXISTS `tecnicos_citas` (
   `idUsuario` INT(11) NOT NULL,
   `idCita` INT(11) NOT NULL,

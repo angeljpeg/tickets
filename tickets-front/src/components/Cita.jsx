@@ -5,12 +5,14 @@ import { IoCheckboxOutline } from "react-icons/io5";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { useContext, useState } from "react";
 import CompletedCita from "./Modales/components/CompletedCita";
+import DeleteCita from "./Modales/deleteCita";
 
 export function Cita({ cita }) {
   const { user } = useContext(UserContext);
 
   const [modals, setModals] = useState({
     completedCita: false,
+    deleteCita: false,
   });
 
   // Función para alternar visibilidad de modales
@@ -21,6 +23,8 @@ export function Cita({ cita }) {
   // Cerrar modal de completed cita
   const handleCloseModalCompleteCita = () =>
     toggleModal("completedCita", false);
+
+  const handleCloseDeleteCita = () => toggleModal("deleteCita", false);
 
   const priorityColors = {
     1: "text-red-500",
@@ -44,6 +48,11 @@ export function Cita({ cita }) {
     <div
       className={`flex flex-col w-full p-4 bg-neutral-800 rounded-xl h-full`}
     >
+      <DeleteCita
+        handleClose={handleCloseDeleteCita}
+        cita={cita}
+        isOpen={modals.deleteCita}
+      />
       <CompletedCita
         isOpen={modals.completedCita}
         handleCloseCita={handleCloseModalCompleteCita}
@@ -76,7 +85,7 @@ export function Cita({ cita }) {
             {user.rolUsuario == "Administrador" && (
               <RiDeleteBin6Line
                 className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
-                onClick={() => toggleModal("deleteTicket", true)}
+                onClick={() => toggleModal("deleteCita", true)}
               />
             )}
           </div>

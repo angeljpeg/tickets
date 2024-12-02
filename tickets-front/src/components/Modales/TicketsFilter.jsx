@@ -46,7 +46,7 @@ export default function TicketsFilter({ handleClose, handleFilterChange, filters
             />
             EN PROCESO
           </label>
-          <label>
+          <label className="mr-2">
             <input
               type="checkbox"
               value="Pendiente"
@@ -60,6 +60,21 @@ export default function TicketsFilter({ handleClose, handleFilterChange, filters
               }
             />
             NO REVISADO
+          </label>
+          <label className="mr-2">
+            <input
+              type="checkbox"
+              value="No Completado"
+              className="mr-1 bg-neutral-600"
+              onChange={(e) =>
+                handleFilterChange("estado", [
+                  ...(filters.estado.includes(e.target.value)
+                    ? filters.estado.filter((p) => p !== e.target.value)
+                    : [...filters.estado, e.target.value]),
+                ])
+              }
+            />
+            NO COMPLETADO
           </label>
         </div>
         {/* Filtro por prioridad */}

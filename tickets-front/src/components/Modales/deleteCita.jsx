@@ -1,14 +1,14 @@
 import PropTypes from "prop-types";
 import { HiOutlineX } from "react-icons/hi";
-import { deleteTicket } from "../../api/citas";
+import { deleteCita } from "../../api/citas";
 
 export default function DeleteCita({ handleClose, cita, isOpen }) {
 
   const handleDelete = async () => {
-    const response = await deleteTicket(cita.idTicket);
+    const response = await deleteCita(cita.idCita);
     if (response.ok) {
       handleClose();
-      alert("Ticket eliminado con éxito", "success");
+      alert("Cita eliminado con éxito", "success");
     }
   };
   return (
@@ -28,7 +28,7 @@ export default function DeleteCita({ handleClose, cita, isOpen }) {
         >
           {/* HEADER */}
           <div className="flex items-center justify-between w-full mb-2 h-fit">
-            <header className="text-lg font-bold">Eliminar Ticket</header>
+            <header className="text-lg font-bold">Eliminar Cita</header>
             <HiOutlineX
               onClick={handleClose}
               className="text-3xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer"
@@ -37,7 +37,7 @@ export default function DeleteCita({ handleClose, cita, isOpen }) {
           {/* CONTENT */}
           <div className="flex flex-col gap-4 p-4">
             <p className="text-lg font-bold">
-              ¿Estás seguro de que quieres eliminar este ticket?
+              ¿Estás seguro de que quieres eliminar este Cita?
             </p>
             <p className="text-sm font-medium">
               ID de la Cita: {cita.idCita}

@@ -86,6 +86,8 @@ export const GetAllTickets = async (req: Request, res: Response) => {
             "puestoUsuario",
             "nombreUsuario",
             "apellidoUsuario",
+            "departamentoUsuario",
+            "plantaUsuario",
             "correoUsuario",
             "rolUsuario",
           ], // Campos específicos del usuario
@@ -132,10 +134,20 @@ export const GetTicketById = async (req: Request, res: Response) => {
           as: "usuario", // Alias configurado en la relación
           attributes: [
             "idUsuario",
+            "puestoUsuario",
             "nombreUsuario",
+            "apellidoUsuario",
+            "departamentoUsuario",
+            "plantaUsuario",
             "correoUsuario",
             "rolUsuario",
           ], // Campos específicos del usuario
+          include: [
+            {
+              model: Puesto,
+              attributes: ["prioridad", "nombrePuesto"],
+            },
+          ],
         },
       ],
       attributes: [
@@ -167,14 +179,12 @@ export const deleteTicketById = async (req: Request, res: Response) => {
     const { id } = req.params;
     const ticket = await Ticket.findByPk(id);
     if (!ticket) {
-      res
-        .status(404)
-        .json({
-          error: "Ticket no encontrado.",
-          campo: "idTicket",
-          valor: id,
-          status: 404,
-        });
+      res.status(404).json({
+        error: "Ticket no encontrado.",
+        campo: "idTicket",
+        valor: id,
+        status: 404,
+      });
       return;
     }
 
@@ -225,9 +235,19 @@ export const getTicketsByUsuario = async (req: Request, res: Response) => {
           as: "usuario",
           attributes: [
             "idUsuario",
+            "puestoUsuario",
             "nombreUsuario",
+            "apellidoUsuario",
+            "departamentoUsuario",
+            "plantaUsuario",
             "correoUsuario",
             "rolUsuario",
+          ],
+          include: [
+            {
+              model: Puesto,
+              attributes: ["prioridad", "nombrePuesto"],
+            },
           ],
         },
       ],

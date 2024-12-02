@@ -23,6 +23,10 @@ export function ProfileUI() {
           </p>
           <p className="text-xl font-medium text-golden">Correo</p>
           <p className="">{user.correoUsuario}</p>
+          <p className="text-xl font-medium text-golden">Departamento</p>
+          <p className="">{user.departamentoUsuario}</p>
+          <p className="text-xl font-medium text-golden">Planta</p>
+          <p className="">{user.plantaUsuario}</p>
           <p className="text-xl font-medium text-golden">Rol</p>
           <p className="">
             {user.rolUsuario}

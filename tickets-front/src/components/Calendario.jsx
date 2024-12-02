@@ -34,6 +34,12 @@ const Calendar = () => {
     day = addDays(day, 1);
   }
 
+  const priorityColors = {
+    1: "text-red-500",
+    2: "text-yellow-500",
+    3: "text-green-500",
+  };
+
   const handlePreviousMonth = () => {
     setCurrentMonth(subMonths(currentMonth, 1));
   };
@@ -61,7 +67,7 @@ const Calendar = () => {
         let response;
         if (user?.rolUsuario === "Usuario") {
           response = await getCitaByUser(user.idUsuario);
-        } else if (user?.rolUsuario === "Administrador") {
+        } else if (user?.rolUsuario === "Administrador" || user?.rolUsuario === "Secretario") {
           response = await getAllCitas();
         } else if (user?.rolUsuario === "Tecnico") {
           response = await getCitaByTecnico(user.idUsuario);
@@ -110,49 +116,66 @@ const Calendar = () => {
         </div>
 
         <div className="grid grid-cols-7 gap-2 text-center">
-          {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
-            <div key={day} className="font-bold text-neutral-500">
-              {day}
+  {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
+    <div key={day} className="font-bold text-neutral-500">
+      {day}
+    </div>
+  ))}
+
+  {days.map((date, index) => {
+    const appointmentsOnDate = formatAppointments(date);
+    const maxAppointmentsToShow = 3;
+    const showMoreButton = appointmentsOnDate.length > maxAppointmentsToShow;
+
+    return (
+      <div
+        key={index}
+        className={`p-4 rounded-lg transition-all duration-300 hover:bg-opacity-70 hover:cursor-pointer ${
+          isSameMonth(date, currentMonth)
+            ? "bg-neutral-700"
+            : "bg-neutral-800"
+        } ${
+          isSameDay(date, new Date()) ? "bg-neutral-400 text-white" : ""
+        }`}
+        onClick={() => setSelectedDate(appointmentsOnDate)}
+      >
+        <div className="text-sm font-bold">{format(date, "d")}</div>
+        
+        {/* Mostrar solo las primeras 3 citas */}
+        {appointmentsOnDate.slice(0, maxAppointmentsToShow).map((appt) => {
+          const priorityClass =
+            appt.ticket.prioridadTicket === "3"
+              ? "bg-green-500"
+              : appt.ticket.prioridadTicket === "2"
+              ? "bg-yellow-500"
+              : "bg-red-500";
+
+          return (
+            <div
+              key={appt.idCita}
+              className={`px-1 mt-1 text-xs rounded ${priorityClass} text-neutral-700`}
+            >
+              {format(parseISO(appt.fechaInicioCita), "HH:mm")}
             </div>
-          ))}
+          );
+        })}
 
-          {days.map((date, index) => {
-            const appointmentsOnDate = formatAppointments(date);
-
-            return (
-              <div
-                key={index}
-                className={`p-4 rounded-lg transition-all duration-300 hover:bg-opacity-70 hover:cursor-pointer ${
-                  isSameMonth(date, currentMonth)
-                    ? "bg-neutral-700"
-                    : "bg-neutral-800"
-                } ${
-                  isSameDay(date, new Date()) ? "bg-neutral-400 text-white" : ""
-                }`}
-                onClick={() => setSelectedDate(appointmentsOnDate)}
-              >
-                <div className="text-sm font-bold">{format(date, "d")}</div>
-                {appointmentsOnDate.map((appt) => {
-                  const priorityClass =
-                    appt.ticket.prioridadTicket === "1"
-                      ? "bg-green-500"
-                      : appt.ticket.prioridadTicket === "2"
-                      ? "bg-yellow-500"
-                      : "bg-red-500";
-
-                  return (
-                    <div
-                      key={appt.idCita}
-                      className={`px-1 mt-1 text-xs rounded ${priorityClass} text-neutral-700`}
-                    >
-                      {format(parseISO(appt.fechaInicioCita), "HH:mm")}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
+        {/* Mostrar botón "Ver más" si hay más de 3 citas */}
+        {showMoreButton && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation(); // Evitar que el onClick del div se active
+              setSelectedDate(appointmentsOnDate); // O cualquier acción que necesites
+            }}
+            className="mt-2 text-xs text-black font-medium bg-neutral-400 py-1 px-2 rounded-md w-full"
+          >
+            Ver más
+          </button>
+        )}
+      </div>
+    );
+  })}
+</div>
 
         {selectedDate && (
           <div
@@ -193,13 +216,7 @@ const Calendar = () => {
                         <p>
                           Prioridad:{" "}
                           <span
-                            className={`font-semibold ${
-                              appt.ticket.prioridadTicket === "1"
-                                ? "text-green-500"
-                                : appt.ticket.prioridadTicket === "2"
-                                ? "text-yellow-500"
-                                : "text-red-500"
-                            }`}
+                            className={`font-semibold ${priorityColors[appt.ticket.prioridadTicket]}`}
                           >
                             {appt.ticket.prioridadTicket}
                           </span>

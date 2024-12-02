@@ -10,7 +10,8 @@ import {
 enum RolUsuarios {
     Usuario = "USUARIO",
     Tecnico = "TECNICO",
-    Administrador = "ADMINISTRADOR"
+    Administrador = "ADMINISTRADOR",
+    Secretario = "SECRETARIO"
 }
 
 class Usuario extends Model<
@@ -23,6 +24,8 @@ class Usuario extends Model<
   declare apellidoUsuario: string;
   declare correoUsuario: string;
   declare claveUsuario: string;
+  declare departamentoUsuario: string;
+  declare plantaUsuario: string;
   declare rolUsuario: RolUsuarios;
   declare puestoUsuario: number;
 }
@@ -48,6 +51,14 @@ Usuario.init(
     },
     claveUsuario: {
       type: new DataTypes.STRING(25),
+      allowNull: true,
+    },
+    departamentoUsuario: {
+      type: new DataTypes.STRING(255),
+      allowNull: true,
+    },
+    plantaUsuario: {
+      type: new DataTypes.STRING(255),
       allowNull: true,
     },
     rolUsuario: {

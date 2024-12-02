@@ -47,8 +47,20 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
         });
       }
 
-      // Verificar si hay citas existentes que se solapan
+      // Mostrar la fecha de inicio en formato ISO
+      console.log("Fecha de inicio:", fechaInicioSoloFecha);
+
+      // Verificar si hay citas existentes para los técnicos en la misma fecha
+      console.log("Buscando citas de conflicto globalmente...");
       const citasConflicto = await Cita.findAll({
+        include: [
+          {
+            model: Usuario,
+            as: "tecnicos",
+            through: { attributes: [] },
+            where: { idUsuario: { [Op.in]: tecnicos } }, // Filtra por los técnicos
+          },
+        ],
         where: sequelize.where(
           sequelize.fn("DATE", sequelize.col("fechaInicioCita")),
           fechaInicioSoloFecha
@@ -56,17 +68,22 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
         transaction,
       });
 
+      console.log("Citas de conflicto encontradas:", citasConflicto.length);
+
       if (citasConflicto.length > 0) {
         await transaction.rollback();
         return res.status(400).json({
-          message: "Ya existe una cita en este rango de fechas",
+          message: "Ya existe una cita en este rango de fechas para los técnicos seleccionados",
           citasConflicto,
         });
       }
 
-      // Verificar conflictos de horarios para cada técnico
+      // Verificar conflictos de horarios para cada técnico individualmente
+      const tecnicosConConflicto: number[] = []; // Para almacenar los IDs de técnicos con conflicto
+
       for (const tecnicoId of tecnicos) {
-        const citasConflicto = await Cita.findAll({
+        console.log(`Buscando citas de conflicto para el técnico ${tecnicoId}...`);
+        const citasConflictoPorTecnico = await Cita.findAll({
           include: [
             {
               model: Usuario,
@@ -83,13 +100,20 @@ export const CreateCita = async (req: Request, res: Response): Promise<any> => {
           transaction,
         });
 
-        if (citasConflicto.length > 0) {
-          await transaction.rollback();
-          return res.status(400).json({
-            message: `El técnico con ID ${tecnicoId} tiene conflictos de horarios`,
-            citasConflicto,
-          });
+        console.log(`Citas de conflicto para el técnico ${tecnicoId}:`, citasConflictoPorTecnico.length);
+
+        if (citasConflictoPorTecnico.length > 0) {
+          tecnicosConConflicto.push(tecnicoId); // Agregar el ID del técnico con conflicto
         }
+      }
+
+      // Si hay técnicos con conflicto, rollback y mensaje de error con sus IDs
+      if (tecnicosConConflicto.length > 0) {
+        await transaction.rollback();
+        return res.status(400).json({
+          message: `Los siguientes técnicos tienen conflictos de horarios: ${tecnicosConConflicto.join(', ')}`,
+          tecnicosConConflicto,
+        });
       }
 
       // Crear la cita
@@ -311,16 +335,18 @@ export const DeleteCitaById = async (
   req: Request,
   res: Response
 ): Promise<any> => {
-    try {
-    const rowsDeleted = await Cita.destroy({ where: { idCita: req.params.id } });
+  try {
+    const rowsDeleted = await Cita.destroy({
+      where: { idCita: req.params.id },
+    });
 
     if (!rowsDeleted) {
       return res.status(404).json({ error: "Cita no encontrada" });
     }
 
-    res.status(200).json({ message: "Cita eliminada exitosamente", ok: true }); 
+    res.status(200).json({ message: "Cita eliminada exitosamente", ok: true });
   } catch (error) {
-    res.status(500).json({ error});
+    res.status(500).json({ error });
   }
 };
 
@@ -411,15 +437,6 @@ export const GetCitasByTecnico = async (
         {
           model: Ticket,
           as: "ticket",
-          attributes: [
-            "idTicket",
-            "tituloTicket",
-            "statusTicket",
-            "prioridadTicket",
-            "fechaSolicitadoTicket",
-            "fechaFinalizadoTicket",
-            "descripcionTicket",
-          ],
         },
       ],
       order: [

@@ -120,7 +120,7 @@ export function TicketsUI() {
     }
 
     return filtered;
-  }, [tickets, filters]);
+  }, [filters, tickets]);
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -148,7 +148,7 @@ export function TicketsUI() {
         if (user?.rolUsuario === "Usuario") {
           response = await ticketsByUser(user?.idUsuario);
           console.log(response);
-        } else if (user?.rolUsuario === "Administrador") {
+        } else if (user?.rolUsuario === "Administrador" || user?.rolUsuario === "Secretario") {
           response = await allTickets();
         }
 
