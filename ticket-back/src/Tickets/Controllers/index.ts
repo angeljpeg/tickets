@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import sequelize from "sequelize";
 import { Ticket, Usuario, Puesto } from "../../model";
+import { ok } from "assert";
 
 export const CreateTicket = async (
   req: Request,
@@ -274,3 +275,40 @@ export const getTicketsByUsuario = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const EditTicketById = async (req: Request, res: Response) : Promise<any> => {
+  try {
+    const { id } = req.params;
+    const { tituloTicket, descripcionTicket, prioridadTicket } = req.body;
+
+    const ticket = await Ticket.findByPk(id);
+
+    if (!ticket) {
+      return res.status(404).json({
+        error: "Ticket no encontrado.",
+        campo: "idTicket",
+        valor: id,
+        status: 404,
+      });
+    }
+
+    await ticket.update({
+      tituloTicket,
+      descripcionTicket,
+      prioridadTicket,
+    });
+
+    res.status(200).json({
+      message: "Ticket actualizado exitosamente.",
+      data: ticket,
+      ok: true,
+    });
+  } catch (error: any) {
+    console.error("Error al actualizar el ticket:", error.message);
+
+    res.status(500).json({
+      error: "Ocurrió un error al actualizar el ticket.",
+      details: error.message,
+    });
+  }
+};  

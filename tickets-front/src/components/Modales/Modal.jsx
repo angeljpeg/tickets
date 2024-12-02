@@ -31,7 +31,7 @@ export function Modal({
 
   return (
     <div
-      className={`fixed inset-0 lg:ml-[300px] flex items-center lg:px-0 md:px-0 px-4 justify-center bg-black/75 transition-opacity duration-300 ${
+      className={`fixed inset-0 lg:ml-[300px] flex items-center lg:px-0 md:px-0 px-4 justify-center bg-black/20 transition-opacity duration-300 ${
         informationModal.mostrar && objetoModal.id == informationModal.id
           ? "opacity-100"
           : "opacity-0"

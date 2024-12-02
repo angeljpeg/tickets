@@ -1,4 +1,4 @@
-import { API_URL, queryDelete } from "./const.js";
+import { API_URL, queryDelete, queryPut } from "./const.js";
 
 
 export const allTickets = async () => {
@@ -42,6 +42,21 @@ export const deleteTicket = async (data) => {
   try {
     console.log(data);
     const response = await queryDelete(`tickets/delete/${data}`);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const editTicket = async (data) => {
+  try {
+    const bodyData = {
+      tituloTicket: data.tituloTicket,
+      descripcionTicket: data.descripcionTicket,
+      prioridadTicket: data.prioridadTicket,
+    };
+    const response = await queryPut(`tickets/edit/${data.idTicket}`, bodyData);
     console.log(response);
     return response;
   } catch (error) {

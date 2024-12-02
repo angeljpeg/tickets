@@ -165,7 +165,7 @@ export function AppointmentUI() {
     };
 
     fetchCitas();
-  }, [user, filteredCitas]);
+  }, [user]);
 
   return (
     <div className="w-full h-[calc(100vh-4rem)]">

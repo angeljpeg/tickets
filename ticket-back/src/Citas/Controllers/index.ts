@@ -336,12 +336,24 @@ export const DeleteCitaById = async (
   res: Response
 ): Promise<any> => {
   try {
+
+    const cita = await Cita.findByPk(req.params.id);
+
+    if (!cita) {
+      return res.status(404).json({ error: "Cita no encontrada" });
+    }
     const rowsDeleted = await Cita.destroy({
       where: { idCita: req.params.id },
     });
 
     if (!rowsDeleted) {
       return res.status(404).json({ error: "Cita no encontrada" });
+    }
+
+    // Obtener ticket de cita y cambiar estado a "Pendiente" si es "En proceso"
+    const ticket = await Ticket.findByPk(cita.idTicket);
+    if (ticket?.statusTicket === "En Proceso") {
+      await ticket.update({ statusTicket: "Pendiente" });
     }
 
     res.status(200).json({ message: "Cita eliminada exitosamente", ok: true });

@@ -5,17 +5,16 @@ import { TbEdit } from "react-icons/tb";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { useContext, useState } from "react";
 import UserContext from "../context/UserContext";
-import { EditarTicketModal } from "./Modales/components/EditarTicketModal";
 import DeleteTicket from "../components/Modales/deleteTicket";
 import { BiBookAdd } from "react-icons/bi";
 
 import dayjs from "dayjs";
 import AddCitaModal from "./Modales/components/AddCitaModal";
+import { EditarTicket } from "./forms/EditTicket";
 
 export function Ticket({ ticket }) {
   const {
     user,
-    setInformationModal /* , completaTickets, setCompletaTickets */,
   } = useContext(UserContext);
 
   const [modals, setModals] = useState({
@@ -36,6 +35,8 @@ export function Ticket({ ticket }) {
   const handleCloseDeleteTicket = () => toggleModal("deleteTicket", false);
   // Cerrar modal de delete  Cita
   const handleCloseDeleteCita = () => toggleModal("addCita", false);
+  // Cerrar modal de editar ticket
+  const handleCloseEditTicket = () => toggleModal("editTicket", false);
 
   const priorityColors = {
     1: "text-red-500",
@@ -50,16 +51,10 @@ export function Ticket({ ticket }) {
   };
 
   const stateIcons = {
-    "COMPLETADO": <FaRegCheckCircle className="text-xl" />,
+    COMPLETADO: <FaRegCheckCircle className="text-xl" />,
     "EN PROCESO": <MdAccessTime className="text-2xl" />,
     "NO REVISADO": <FaRegTimesCircle className="text-xl" />,
     "NO COMPLETADO": <FaRegTimesCircle className="text-xl" />,
-  };
-
-  const objetoModal = {
-    mostrar: true,
-    title: "Editar tickets",
-    id: ticket.id,
   };
 
   const fechaSolicitud = dayjs(ticket.fechaSolicitudTicket);
@@ -74,7 +69,11 @@ export function Ticket({ ticket }) {
         className={`flex flex-col w-full p-4 bg-neutral-800 rounded-xl h-full`}
       >
         {/* Modal Edit ticket */}
-        <EditarTicketModal ticket={ticket} />
+        <EditarTicket
+          handleClose={handleCloseEditTicket}
+          ticket={ticket}
+          isOpen={modals.editTicket}
+        />
         <DeleteTicket
           handleClose={handleCloseDeleteTicket}
           ticket={ticket}
@@ -95,35 +94,35 @@ export function Ticket({ ticket }) {
               </span>
             </h2>
           </div>
-          {user.rolUsuario == "Administrador" ||
-            (user.rolUsuario == "Secretario" && (
-              <div className="flex items-center gap-2">
-                <BiBookAdd
-                  className={`text-2xl transition-all ${
-                    isDisabled
-                      ? "cursor-not-allowed opacity-50"
-                      : "hover:text-golden hover:scale-110 cursor-pointer"
-                  }`}
-                  onClick={() => {
-                    if (!isDisabled) {
-                      toggleModal("addCita", true);
-                    }
-                  }}
-                />
-                {user.rolUsuario == "Administrador" && (
-                  <>
-                    <RiDeleteBin6Line
-                      className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
-                      onClick={() => toggleModal("deleteTicket", true)}
-                    />
-                    <TbEdit
-                      className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
-                      onClick={() => setInformationModal(objetoModal)}
-                    />
-                  </>
-                )}
-              </div>
-            ))}
+          {(user.rolUsuario === "Administrador" ||
+            user.rolUsuario === "Secretario") && (
+            <div className="flex items-center gap-2">
+              <BiBookAdd
+                className={`text-2xl transition-all ${
+                  isDisabled
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:text-golden hover:scale-110 cursor-pointer"
+                }`}
+                onClick={() => {
+                  if (!isDisabled) {
+                    toggleModal("addCita", true);
+                  }
+                }}
+              />
+              {user.rolUsuario === "Administrador" && (
+                <>
+                  <RiDeleteBin6Line
+                    className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
+                    onClick={() => toggleModal("deleteTicket", true)}
+                  />
+                  <TbEdit
+                    className="text-2xl transition-all duration-300 ease-in-out hover:text-golden hover:cursor-pointer hover:scale-110"
+                    onClick={() => toggleModal("editTicket", true)}
+                  />
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-2 mb-4 lg:grid-cols-4 md:grid-cols-2">
@@ -178,7 +177,8 @@ export function Ticket({ ticket }) {
                 {ticket.usuario.Puesto.nombrePuesto}
               </p>
               <p>
-                Departamento: {ticket.usuario.departamentoUsuario}, {ticket.usuario.plantaUsuario}
+                Departamento: {ticket.usuario.departamentoUsuario},{" "}
+                {ticket.usuario.plantaUsuario}
               </p>
             </div>
           )}
