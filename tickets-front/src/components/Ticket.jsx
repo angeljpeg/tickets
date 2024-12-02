@@ -61,7 +61,7 @@ export function Ticket({ ticket }) {
 
   const isDisabled =
     ticket.statusTicket === "Completado" ||
-    ticket.statusTicket === "No Completado";
+    ticket.statusTicket === "En Proceso";
 
   return (
     <>
